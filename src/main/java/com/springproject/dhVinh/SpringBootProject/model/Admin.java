@@ -3,6 +3,7 @@ package com.springproject.dhVinh.SpringBootProject.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.sql.Blob;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.*;
@@ -27,8 +28,8 @@ public class Admin {
     private String lastName;
     @Column(name = "birthDate")
     private Date birthDate;
-    @Column(name = "avatar")
-    private String avatar;
+    @Lob
+    private Blob avatar;
     @Column(name = "gender")
     private String gender;
     @Column(name = "registrationDate")

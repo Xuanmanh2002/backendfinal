@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springproject.dhVinh.SpringBootProject.exception.AdminAlreadyExistsException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.request.LoginRequest;
+import com.springproject.dhVinh.SpringBootProject.response.AdminResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.JwtResponse;
 import com.springproject.dhVinh.SpringBootProject.security.admin.AdminDetail;
@@ -25,21 +26,26 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.Blob;
+import java.sql.Date;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/")
 @RequiredArgsConstructor
 public class LoginEmployerController {
 
-    private final IEmployerService companyService;
+    private final IEmployerService employerService;
 
     private final AuthenticationManager authenticationManager;
 
@@ -53,31 +59,33 @@ public class LoginEmployerController {
 
     @PostMapping(value = "/register-employer", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @SneakyThrows
-    public ResponseEntity<?> registerEmployer(@ModelAttribute(name = "EmployerResponse") EmployerResponse response,
-                                             @RequestPart("avatar") MultipartFile avatar) {
-        try {
-            Path basePath = Paths.get("/home/suanmanh/Documents/sendUBUNTU/argon-dashboard-react-master/src/assets/img/avatar");
-            Files.createDirectories(basePath);
-            Path filePath = basePath.resolve(avatar.getOriginalFilename());
-            try (InputStream inputStream = avatar.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }
-            String avatarPath = filePath.toAbsolutePath().toString();
-
-            Admin admin = companyService.registerEmployer(response.getEmail(),
-                    response.getPassword(), response.getFirstName(), response.getLastName(), response.getBirthDate(),
-                    avatarPath, response.getGender(), response.getTelephone(), response.getAddress(), response.getCompanyName());
-            Map<String, Object> message = new HashMap<>();
-            message.put("message", "success");
-            message.put("data", admin);
-            return ResponseEntity.ok().body(objectMapper.writeValueAsString(message));
-        } catch (AdminAlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    public ResponseEntity<EmployerResponse> registerEmployer(@RequestParam("email") String email,
+                                              @RequestParam("password") String password,
+                                              @RequestParam("firstName") String firstName,
+                                              @RequestParam("lastName") String lastName,
+                                              @RequestParam("birthDate") Date birthDate,
+                                              @RequestParam("gender") String gender,
+                                              @RequestParam("telephone") String telephone,
+                                              @RequestParam("address") String address, @RequestParam("companyName") String companyName,
+                                              @RequestParam("avatar") MultipartFile avatar) throws SQLException, IOException {
+        Admin savedAdmin = employerService.registerEmployer(email, password, firstName, lastName, birthDate, gender, telephone, address, companyName, avatar);
+        EmployerResponse response = new EmployerResponse(
+                savedAdmin.getEmail(),
+                savedAdmin.getPassword(),
+                savedAdmin.getFirstName(),
+                savedAdmin.getLastName(),
+                savedAdmin.getBirthDate(),
+                savedAdmin.getAvatar() != null ? savedAdmin.getAvatar().getBytes(1, (int) savedAdmin.getAvatar().length()) : null,
+                savedAdmin.getGender(),
+                savedAdmin.getTelephone(),
+                savedAdmin.getAddress(),
+                savedAdmin.getCompanyName()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest request){
+    public ResponseEntity<?> authenticateEmployer(@Valid @RequestBody LoginRequest request){
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -85,10 +93,20 @@ public class LoginEmployerController {
         AdminDetail adminDetail = (AdminDetail) authentication.getPrincipal();
         List<String> roles = adminDetail.getAuthorities()
                 .stream()
-                .map(GrantedAuthority::getAuthority).toList();
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
         String firstName = adminDetail.getFirstName();
         String lastName = adminDetail.getLastName();
-        String avatar = adminDetail.getAvatar();
+        Blob avatar = adminDetail.getAvatar();
+
+        byte[] avatarBytes = null;
+        if (avatar != null) {
+            try {
+                avatarBytes = avatar.getBytes(1, (int) avatar.length());
+            } catch (SQLException e) {
+                e.printStackTrace(); // Handle exception appropriately
+            }
+        }
 
         return ResponseEntity.ok(new JwtResponse(
                 adminDetail.getId(),
@@ -97,7 +115,7 @@ public class LoginEmployerController {
                 roles,
                 firstName,
                 lastName,
-                avatar
+                avatarBytes
         ));
     }
 

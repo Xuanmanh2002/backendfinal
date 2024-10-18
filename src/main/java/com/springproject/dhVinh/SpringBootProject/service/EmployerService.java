@@ -10,8 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.sql.rowset.serial.SerialBlob;
+import java.io.IOException;
+import java.sql.Blob;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,7 +31,7 @@ public class EmployerService implements IEmployerService {
     private final RoleRepository roleRepository;
 
     @Override
-    public Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate, String avatar, String gender, String telephone, String address, String companyName) {
+    public Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate,  String gender, String telephone, String address, String companyName, MultipartFile avatar)  throws SQLException, IOException {
         Admin admin = new Admin();
         if (adminRepository.existsByEmail(email)) {
             throw new AdminAlreadyExistsException(email + " already exists");
@@ -35,7 +40,11 @@ public class EmployerService implements IEmployerService {
         if (password == null) {
             throw new IllegalArgumentException("Password cannot be null");
         }
-        admin.setAvatar(avatar);
+        if (!avatar.isEmpty()){
+            byte[] photoBytes = avatar.getBytes();
+            Blob photoBlob = new SerialBlob(photoBytes);
+            admin.setAvatar(photoBlob);
+        }
         admin.setEmail(email);
         admin.setPassword(passwordEncoder.encode(password));
         admin.setFirstName(firstName);

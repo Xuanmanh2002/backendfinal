@@ -10,8 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.sql.rowset.serial.SerialBlob;
+import java.io.IOException;
+import java.sql.Blob;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +32,8 @@ public class AdminService implements IAdminService {
     private final RoleRepository roleRepository;
 
     @Override
-    public Admin registerAdmin(String email, String password, String firstName, String lastName, Date birthDate, String avatar,
-                               String gender, String telephone, String address)  {
+    public Admin registerAdmin(String email, String password, String firstName, String lastName, Date birthDate,
+                               String gender, String telephone, String address, MultipartFile avatar)  throws SQLException, IOException {
         Admin admin = new Admin();
         if (adminRepository.existsByEmail(email)) {
             throw new AdminAlreadyExistsException(email + " already exists");
@@ -37,7 +42,11 @@ public class AdminService implements IAdminService {
         if (password == null) {
             throw new IllegalArgumentException("Password cannot be null");
         }
-        admin.setAvatar(avatar);
+        if (!avatar.isEmpty()){
+            byte[] photoBytes = avatar.getBytes();
+            Blob photoBlob = new SerialBlob(photoBytes);
+            admin.setAvatar(photoBlob);
+        }
         admin.setEmail(email);
         admin.setPassword(passwordEncoder.encode(password));
         admin.setFirstName(firstName);
@@ -78,5 +87,18 @@ public class AdminService implements IAdminService {
     @Override
     public Optional<Admin> getAdminById(Long adminId) {
         return Optional.of(adminRepository.findById(adminId).get());
+    }
+
+    @Override
+    public byte[] getAvatarByEmail(String email) throws SQLException {
+        Optional<Admin> admin = adminRepository.findByEmail(email);
+        if(admin.isEmpty()) {
+            throw new AdminAlreadyExistsException("Sorry, admin not found");
+        }
+        Blob photoBlob = admin.get().getAvatar();
+        if(photoBlob != null){
+            return photoBlob.getBytes(1, (int) photoBlob.length());
+        }
+        return null;
     }
 }

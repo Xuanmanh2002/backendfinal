@@ -9,6 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.sql.Blob;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,10 +24,9 @@ public class AdminDetail implements UserDetails {
     private String password;
     private String firstName;
     private String lastName;
-    private String avatar;
+    private Blob avatar; // Change from String to Blob
     private Collection<GrantedAuthority> authorities;
 
-    // Phương thức static để tạo đối tượng AdminDetail từ Admin
     public static AdminDetail adminDetail(Admin admin) {
         List<GrantedAuthority> authorities = admin.getRoles()
                 .stream()
@@ -38,7 +38,7 @@ public class AdminDetail implements UserDetails {
                 admin.getPassword(),
                 admin.getFirstName(),
                 admin.getLastName(),
-                admin.getAvatar(),
+                admin.getAvatar(), // No change needed here
                 authorities);
     }
 
