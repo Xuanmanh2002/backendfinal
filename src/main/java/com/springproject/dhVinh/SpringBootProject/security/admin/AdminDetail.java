@@ -24,7 +24,7 @@ public class AdminDetail implements UserDetails {
     private String password;
     private String firstName;
     private String lastName;
-    private Blob avatar; // Change from String to Blob
+    private Blob avatar;
     private Collection<GrantedAuthority> authorities;
 
     public static AdminDetail adminDetail(Admin admin) {
@@ -38,7 +38,7 @@ public class AdminDetail implements UserDetails {
                 admin.getPassword(),
                 admin.getFirstName(),
                 admin.getLastName(),
-                admin.getAvatar(), // No change needed here
+                admin.getAvatar(),
                 authorities);
     }
 

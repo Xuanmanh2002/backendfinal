@@ -25,6 +25,8 @@ public class ApplicationDocuments {
     private String cv;
     @Column(name = "letter")
     private String letter;
+    @Column(name = "status")
+    private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")

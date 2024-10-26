@@ -20,7 +20,7 @@ public class JwtResponse {
     private List<String> roles;
     private String firstName;
     private String lastName;
-    private Blob avatar;
+    private String avatar;
 
     public JwtResponse(Long id, String email, String token, List<String> roles, String firstName, String lastName, byte[] photoBytes) {
         this.id = id;
@@ -29,7 +29,7 @@ public class JwtResponse {
         this.roles = roles;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.avatar = avatar;
+        this.avatar = photoBytes != null ? Base64.encodeBase64String(photoBytes) : null;
     }
 
 }

@@ -21,7 +21,6 @@ public class ServicePackController {
     private final IServicePackService service;
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<ServicePack>> getAllServicePack() {
         List<ServicePack> servicePacks = service.getAllServicePack();
         if(servicePacks.isEmpty()) {

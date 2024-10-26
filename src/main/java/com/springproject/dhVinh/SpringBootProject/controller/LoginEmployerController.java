@@ -35,13 +35,14 @@ import java.nio.file.StandardCopyOption;
 import java.sql.Blob;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping
 @RequiredArgsConstructor
 public class LoginEmployerController {
 
@@ -75,7 +76,6 @@ public class LoginEmployerController {
                 savedAdmin.getFirstName(),
                 savedAdmin.getLastName(),
                 savedAdmin.getBirthDate(),
-                savedAdmin.getAvatar() != null ? savedAdmin.getAvatar().getBytes(1, (int) savedAdmin.getAvatar().length()) : null,
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
                 savedAdmin.getAddress(),
@@ -84,7 +84,7 @@ public class LoginEmployerController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/login")
+    @PostMapping(value = "/login-employer")
     public ResponseEntity<?> authenticateEmployer(@Valid @RequestBody LoginRequest request){
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
@@ -117,6 +117,23 @@ public class LoginEmployerController {
                 lastName,
                 avatarBytes
         ));
+    }
+
+    @GetMapping("/check-role")
+    public ResponseEntity<Map<String, String>> getRole(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        String role = authorities.stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElse("ROLE_CUSTOMER");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("role", role);
+
+        return ResponseEntity.ok(response);
     }
 
 }

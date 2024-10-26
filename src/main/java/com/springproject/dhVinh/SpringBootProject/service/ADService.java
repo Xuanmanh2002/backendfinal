@@ -28,6 +28,7 @@ public class ADService implements IADService {
         applicationDocuments.setTelephone(telephone);
         applicationDocuments.setCv(cv);
         applicationDocuments.setLetter(letter);
+        applicationDocuments.setStatus("CV tiếp nhận");
         return applicationDocumentsRepository.save(applicationDocuments);
 
     }

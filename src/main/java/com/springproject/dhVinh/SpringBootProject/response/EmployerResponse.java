@@ -20,6 +20,18 @@ public class EmployerResponse {
     private String address;
     private String companyName;
 
+    public EmployerResponse(String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String address, String companyName) {
+        this.email = email;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.address = address;
+        this.companyName = companyName;
+    }
+
     public EmployerResponse(String email, String password, String firstName, String lastName, Date birthDate, byte[] photoBytes, String gender, String telephone, String address, String companyName) {
         this.email = email;
         this.password = password;

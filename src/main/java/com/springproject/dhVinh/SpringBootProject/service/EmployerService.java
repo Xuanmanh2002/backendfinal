@@ -19,6 +19,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -81,5 +82,18 @@ public class EmployerService implements IEmployerService {
     public Admin getEmployer(String email) {
         return adminRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Company not found"));
+    }
+
+    @Override
+    public byte[] getAvatarByEmail(String email) throws SQLException {
+        Optional<Admin> admin = adminRepository.findByEmail(email);
+        if(admin.isEmpty()) {
+            throw new AdminAlreadyExistsException("Sorry, admin not found");
+        }
+        Blob photoBlob = admin.get().getAvatar();
+        if(photoBlob != null){
+            return photoBlob.getBytes(1, (int) photoBlob.length());
+        }
+        return null;
     }
 }

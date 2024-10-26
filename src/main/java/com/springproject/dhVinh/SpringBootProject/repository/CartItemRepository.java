@@ -1,4 +1,9 @@
 package com.springproject.dhVinh.SpringBootProject.repository;
 
-public class CartItemRepository {
+import com.springproject.dhVinh.SpringBootProject.model.CartItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CartItemRepository extends JpaRepository<CartItem, Long> {
 }

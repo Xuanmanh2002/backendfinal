@@ -16,4 +16,6 @@ public interface IEmployerService {
     void deleteEmployer(String email);
 
     Admin getEmployer(String email);
+
+    byte[] getAvatarByEmail(String email) throws SQLException;
 }

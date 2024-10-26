@@ -58,4 +58,10 @@ public class Admin {
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<ApplicationDocuments> applicationDocuments;
 
+    @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Cart> carts;
+
+    @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Order> orders;
+
 }

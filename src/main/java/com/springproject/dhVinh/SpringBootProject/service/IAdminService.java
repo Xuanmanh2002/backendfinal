@@ -23,4 +23,7 @@ public interface IAdminService {
 
     byte[] getAvatarByEmail(String email) throws SQLException;
 
+    Admin updateAdmin(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar,
+                      String gender, String telephone, String address) throws SQLException, IOException ;
+
 }

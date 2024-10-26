@@ -1,4 +1,12 @@
 package com.springproject.dhVinh.SpringBootProject.service;
 
-public class ICartItemService {
+import com.springproject.dhVinh.SpringBootProject.model.CartItem;
+
+public interface ICartItemService {
+
+
+
+
+
+    
 }

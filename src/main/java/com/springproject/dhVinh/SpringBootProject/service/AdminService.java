@@ -101,4 +101,33 @@ public class AdminService implements IAdminService {
         }
         return null;
     }
+
+    @Override
+    public Admin updateAdmin(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, String address) throws SQLException, IOException {
+        Optional<Admin> optionalAdmin = adminRepository.findByEmail(email);
+        if (optionalAdmin.isPresent()) {
+            Admin admin = optionalAdmin.get();
+            admin.setFirstName(firstName);
+            admin.setLastName(lastName);
+            if (birthDate != null) {
+                admin.setBirthDate(birthDate);
+            }
+            admin.setGender(gender);
+            admin.setAddress(address);
+            admin.setTelephone(telephone);
+            if (avatar != null && !avatar.isEmpty()) {
+                byte[] photoBytes = avatar.getBytes();
+                Blob photoBlob = new SerialBlob(photoBytes);
+                admin.setAvatar(photoBlob);
+            }
+            admin.setRegistrationDate(LocalDate.now());
+            admin.setStatus(true);
+            admin.setCompanyName("Topcv");
+
+            return adminRepository.save(admin);
+        } else {
+            throw new AdminAlreadyExistsException("Admin with email " + email + " not found.");
+        }
+    }
+
 }

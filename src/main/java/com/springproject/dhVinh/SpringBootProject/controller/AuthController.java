@@ -71,12 +71,12 @@ public class AuthController {
             @RequestParam("avatar") MultipartFile avatar) throws SQLException, IOException {
         Admin savedAdmin = adminService.registerAdmin(email, password, firstName, lastName, birthDate, gender, telephone, address, avatar);
         AdminResponse response = new AdminResponse(
+                savedAdmin.getId(),
                 savedAdmin.getEmail(),
                 savedAdmin.getPassword(),
                 savedAdmin.getFirstName(),
                 savedAdmin.getLastName(),
                 savedAdmin.getBirthDate(),
-                savedAdmin.getAvatar() != null ? savedAdmin.getAvatar().getBytes(1, (int) savedAdmin.getAvatar().length()) : null,
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
                 savedAdmin.getAddress()
@@ -101,15 +101,14 @@ public class AuthController {
         String lastName = adminDetail.getLastName();
         Blob avatar = adminDetail.getAvatar();
 
-        byte[] avatarBytes = null;
+        byte[] photoBytes = null;
         if (avatar != null) {
             try {
-                avatarBytes = avatar.getBytes(1, (int) avatar.length());
+                photoBytes = avatar.getBytes(1, (int) avatar.length());
             } catch (SQLException e) {
-                e.printStackTrace(); // Handle exception appropriately
+                e.printStackTrace();
             }
         }
-
         return ResponseEntity.ok(new JwtResponse(
                 adminDetail.getId(),
                 adminDetail.getEmail(),
@@ -117,7 +116,7 @@ public class AuthController {
                 roles,
                 firstName,
                 lastName,
-                avatarBytes
+                photoBytes
         ));
     }
 
@@ -137,5 +136,7 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
+
+
 
 }

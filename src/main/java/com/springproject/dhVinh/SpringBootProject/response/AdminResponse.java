@@ -9,6 +9,7 @@ import java.sql.Date;
 @Data
 @NoArgsConstructor
 public class AdminResponse {
+    private Long id;
     private String email;
     private String password;
     private String firstName;
@@ -19,14 +20,23 @@ public class AdminResponse {
     private String telephone;
     private String address;
 
-
-    public AdminResponse(String email, String password, String firstName, String lastName, Date birthDate, byte[] photoBytes, String gender, String telephone, String address) {
+    public AdminResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String address) {
+        this.id = id;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
-        this.avatar = photoBytes != null ? Base64.encodeBase64String(photoBytes) : null;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.address = address;
+    }
+
+    public AdminResponse(String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String address) {
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
         this.gender = gender;
         this.telephone = telephone;
         this.address = address;

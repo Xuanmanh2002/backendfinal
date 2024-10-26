@@ -1,8 +1,10 @@
 package com.springproject.dhVinh.SpringBootProject.controller;
 
+import com.springproject.dhVinh.SpringBootProject.exception.CategoryAlreadyExistsException;
 import com.springproject.dhVinh.SpringBootProject.exception.RoleAlreadyExistException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.model.Role;
+import com.springproject.dhVinh.SpringBootProject.response.RoleResponse;
 import com.springproject.dhVinh.SpringBootProject.service.IRoleService;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,16 +35,18 @@ public class RoleController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<String> createRole(@RequestBody Map<String, String> roleData) {
-        try {
-            String name = roleData.get("name");
-            String description = roleData.get("description");
-            roleService.createRole(name, description);
-            return ResponseEntity.ok("New role created successfully!");
-        } catch (RoleAlreadyExistException re) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(re.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while creating the role.");
+    public ResponseEntity<Map<String, Object>>createRole(@RequestBody RoleResponse response) {
+        Map<String, Object> result = new HashMap<>();
+        try{
+            Role role = roleService.createRole(response.getName(), response.getDescription());
+            result.put("status", "success");
+            result.put("message", "Role created successfully");
+            result.put("role", role);
+            return ResponseEntity.ok(result);
+        } catch (CategoryAlreadyExistsException cae) {
+            result.put("status", "error");
+            result.put("message", cae.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
     }
 
