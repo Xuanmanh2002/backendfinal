@@ -1,5 +1,6 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,8 @@ public class Category {
     private LocalDate createAt;
 
     @OneToMany(mappedBy = "categories", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Job> job;
+    @JsonBackReference
+    private List<Job> jobs;
 
 
 }

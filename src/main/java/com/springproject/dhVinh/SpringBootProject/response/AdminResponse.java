@@ -41,4 +41,15 @@ public class AdminResponse {
         this.telephone = telephone;
         this.address = address;
     }
+
+    public AdminResponse(Long id, String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String address) {
+        this.id = id;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.address = address;
+    }
 }

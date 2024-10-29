@@ -14,4 +14,6 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
    @Query("SELECT j FROM Job j WHERE j.admins.id = :adminId")
    List<Job> findByAdminId(@Param("adminId") Long adminId);
+
+    List<Job> findByAdmins(Admin admin);
 }

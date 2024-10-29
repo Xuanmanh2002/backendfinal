@@ -15,4 +15,5 @@ public interface ICategoryService {
     Category findByCategoryName(String categoryName);
 
     Category updateCategory(Long categoryId, String categoryName, String description );
+
 }

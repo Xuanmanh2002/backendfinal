@@ -102,16 +102,11 @@ public class AdminController {
             @RequestParam("telephone") String telephone,
             @RequestParam("address") String address,
             @RequestParam(value = "avatar", required = false) MultipartFile avatar) throws SQLException, IOException {
-
         Date birthDate = null;
         if (birthDateMillis != null) {
-            birthDate = new Date(birthDateMillis); // Convert milliseconds to Date
+            birthDate = new Date(birthDateMillis);
         }
-
-        // Call service method to update admin
         Admin savedAdmin = adminService.updateAdmin(email, firstName, lastName, birthDate, avatar, gender, telephone, address);
-
-        // Construct response object
         AdminResponse response = new AdminResponse(
                 savedAdmin.getEmail(),
                 savedAdmin.getFirstName(),
@@ -121,7 +116,6 @@ public class AdminController {
                 savedAdmin.getTelephone(),
                 savedAdmin.getAddress()
         );
-
         return ResponseEntity.ok(response);
     }
 

@@ -27,7 +27,6 @@ public class CategoryController {
 
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<Category>> getAllCategory(){
         List<Category> categories = categoryService.getCategory();
         if(categories.isEmpty()){

@@ -1,5 +1,7 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +30,7 @@ public class Admin {
     private String lastName;
     @Column(name = "birthDate")
     private Date birthDate;
+    @JsonIgnore
     @Lob
     private Blob avatar;
     @Column(name = "gender")
@@ -53,6 +56,7 @@ public class Admin {
     private Collection<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Job> jobs;
 
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
