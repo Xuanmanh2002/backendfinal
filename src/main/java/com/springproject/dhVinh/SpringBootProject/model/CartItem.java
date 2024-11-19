@@ -1,5 +1,6 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,13 +22,17 @@ public class CartItem {
     private Double totalPrice;
     @Column(name = "quantity")
     private Long quantity;
+    @Column(name = "totalValidityPeriod")
+    private Long totalValidityPeriod;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_pack_id")
+    @JsonBackReference
+    @JoinColumn(name = "service_id")
     private ServicePack services;
 
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "carts_id")
     private Cart carts;
 

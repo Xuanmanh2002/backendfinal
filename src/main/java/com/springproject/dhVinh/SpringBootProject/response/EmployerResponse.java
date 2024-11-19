@@ -9,6 +9,7 @@ import java.sql.Date;
 @Data
 @NoArgsConstructor
 public class EmployerResponse {
+    private Long id;
     private String email;
     private String password;
     private String firstName;
@@ -17,10 +18,11 @@ public class EmployerResponse {
     private String avatar;
     private String gender;
     private String telephone;
-    private String address;
     private String companyName;
+    private Long addressId;
 
-    public EmployerResponse(String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String address, String companyName) {
+    public EmployerResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, Long addressId) {
+        this.id = id;
         this.email = email;
         this.password = password;
         this.firstName = firstName;
@@ -28,20 +30,30 @@ public class EmployerResponse {
         this.birthDate = birthDate;
         this.gender = gender;
         this.telephone = telephone;
-        this.address = address;
         this.companyName = companyName;
+        this.addressId = addressId;
     }
 
-    public EmployerResponse(String email, String password, String firstName, String lastName, Date birthDate, byte[] photoBytes, String gender, String telephone, String address, String companyName) {
+    public EmployerResponse(String email, String firstName, String lastName, Date birthDate,  String gender, String telephone, String companyName, Long addressId) {
         this.email = email;
-        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
-        this.avatar = photoBytes != null ? Base64.encodeBase64String(photoBytes) : null;
         this.gender = gender;
         this.telephone = telephone;
-        this.address = address;
         this.companyName = companyName;
+        this.addressId = addressId;
+    }
+
+    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, Long addressId) {
+        this.id = id;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.companyName = companyName;
+        this.addressId = addressId;
     }
 }

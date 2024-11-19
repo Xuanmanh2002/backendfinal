@@ -25,7 +25,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class EmployerService implements IEmployerService {
+public class CustomerService implements ICustomerService {
 
     private final AdminRepository adminRepository;
 
@@ -36,7 +36,7 @@ public class EmployerService implements IEmployerService {
     private final AddressRepository addressRepository;
 
     @Override
-    public Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate,  String gender, String telephone, MultipartFile avatar, String companyName, Long addressId)  throws SQLException, IOException {
+    public Admin registerCustomer(String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, MultipartFile avatar, Long addressId) throws SQLException, IOException {
         Admin admin = new Admin();
         if (adminRepository.existsByEmail(email)) {
             throw new AdminAlreadyExistsException(email + " already exists");
@@ -65,32 +65,31 @@ public class EmployerService implements IEmployerService {
         admin.setTelephone(telephone);
         admin.setRegistrationDate(LocalDate.now());
         admin.setStatus(true);
-        admin.setCompanyName(companyName);
-        Role adminRole = roleRepository.findByName("ROLE_EMPLOYER").orElseThrow(() -> new RuntimeException("Role not found"));
+        admin.setCompanyName(null);
+        Role adminRole = roleRepository.findByName("ROLE_CUSTOMER").orElseThrow(() -> new RuntimeException("Role not found"));
         admin.getRoles().add(adminRole);
 
         return adminRepository.save(admin);
     }
 
     @Override
-    public List<Admin> getEmployer() {
-        return adminRepository.findByRoleEmployer();
+    public List<Admin> getCustomer() {
+        return adminRepository.findByRoleCustomer();
     }
 
     @Transactional
     @Override
-    public void deleteEmployer(String email) {
-        Admin adm = getEmployer(email);
+    public void deleteCustomer(String email) {
+        Admin adm = getCustomer(email);
         if (adm != null) {
             adminRepository.deleteByEmail(email);
         }
-
     }
 
     @Override
-    public Admin getEmployer(String email) {
+    public Admin getCustomer(String email) {
         return adminRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Employer not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Customer not found"));
     }
 
     @Override
@@ -107,7 +106,7 @@ public class EmployerService implements IEmployerService {
     }
 
     @Override
-    public Admin updateEmployer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, String companyName, Long addressId) throws SQLException, IOException {
+    public Admin updateCustomer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, Long addressId) throws SQLException, IOException {
         Optional<Admin> optionalAdmin = adminRepository.findByEmail(email);
         if (optionalAdmin.isPresent()) {
             Admin admin = optionalAdmin.get();
@@ -131,11 +130,11 @@ public class EmployerService implements IEmployerService {
             }
             admin.setRegistrationDate(LocalDate.now());
             admin.setStatus(true);
-            admin.setCompanyName(companyName);
+            admin.setCompanyName(null);
 
             return adminRepository.save(admin);
         } else {
-            throw new AdminAlreadyExistsException("Employer with email " + email + " not found.");
+            throw new AdminAlreadyExistsException("Customer with email " + email + " not found.");
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -41,8 +42,6 @@ public class Admin {
     private String telephone;
     @Column(name = "status")
     private Boolean status;
-    @Column(name = "address")
-    private String address;
     @Column(name = "companyName")
     private String companyName;
     @Column(name = "salaryRange")
@@ -60,12 +59,14 @@ public class Admin {
     private List<Job> jobs;
 
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<ApplicationDocuments> applicationDocuments;
 
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Cart> carts;
 
-    @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Order> orders;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Address address;
 }

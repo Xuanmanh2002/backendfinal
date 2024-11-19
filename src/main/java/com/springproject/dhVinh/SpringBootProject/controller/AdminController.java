@@ -76,7 +76,7 @@ public class AdminController {
         adminResponse.setBirthDate(admin.getBirthDate());
         adminResponse.setGender(admin.getGender());
         adminResponse.setTelephone(admin.getTelephone());
-        adminResponse.setAddress(admin.getAddress());
+        adminResponse.setAddressId(admin.getAddress().getId());
 
         byte[] photoBytes = null;
         Blob photoBlob = admin.getAvatar();
@@ -100,13 +100,13 @@ public class AdminController {
             @RequestParam(value = "birthDate", required = false) Long birthDateMillis,
             @RequestParam("gender") String gender,
             @RequestParam("telephone") String telephone,
-            @RequestParam("address") String address,
+            @RequestParam("addressId") Long addressId,
             @RequestParam(value = "avatar", required = false) MultipartFile avatar) throws SQLException, IOException {
         Date birthDate = null;
         if (birthDateMillis != null) {
             birthDate = new Date(birthDateMillis);
         }
-        Admin savedAdmin = adminService.updateAdmin(email, firstName, lastName, birthDate, avatar, gender, telephone, address);
+        Admin savedAdmin = adminService.updateAdmin(email, firstName, lastName, birthDate, avatar, gender, telephone, addressId);
         AdminResponse response = new AdminResponse(
                 savedAdmin.getEmail(),
                 savedAdmin.getFirstName(),
@@ -114,7 +114,7 @@ public class AdminController {
                 savedAdmin.getBirthDate(),
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
-                savedAdmin.getAddress()
+                savedAdmin.getAddress().getId()
         );
         return ResponseEntity.ok(response);
     }

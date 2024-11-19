@@ -1,5 +1,6 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +22,17 @@ public class OrderDetail {
     private Double price;
     @Column(name = "totalAmounts")
     private Double totalAmounts;
+    @Column(name = "totalValidityPeriod")
+    private Long totalValidityPeriod;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "servicePack_id")
     private ServicePack services;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    @JoinColumn(name = "order_id")
+    private Order orders;
 
 }

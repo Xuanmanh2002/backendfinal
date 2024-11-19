@@ -67,9 +67,9 @@ public class AuthController {
             @RequestParam("birthDate") Date birthDate,
             @RequestParam("gender") String gender,
             @RequestParam("telephone") String telephone,
-            @RequestParam("address") String address,
+            @RequestParam("addressId") Long addressId,
             @RequestParam("avatar") MultipartFile avatar) throws SQLException, IOException {
-        Admin savedAdmin = adminService.registerAdmin(email, password, firstName, lastName, birthDate, gender, telephone, address, avatar);
+        Admin savedAdmin = adminService.registerAdmin(email, password, firstName, lastName, birthDate, gender, telephone,  avatar, addressId);
         AdminResponse response = new AdminResponse(
                 savedAdmin.getId(),
                 savedAdmin.getEmail(),
@@ -79,12 +79,10 @@ public class AuthController {
                 savedAdmin.getBirthDate(),
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
-                savedAdmin.getAddress()
+                savedAdmin.getAddress().getId()
         );
         return ResponseEntity.ok(response);
     }
-
-
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateAdmin(@Valid @RequestBody LoginRequest request) {

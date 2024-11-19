@@ -10,10 +10,13 @@ public interface IJobService {
 
     void cancelJob(Long jobId);
 
-    Job addJob(Admin admin , String jobName, String experience, Date applicationDeadline, String recruitmentDetails, Long categoryId);
+    Job addJob(Admin admin , String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId);
 
     List<Job> getAllJobs();
 
+    List<Job> getAllJobByStatusTrue();
+
     List<Job> getAllJobsByEmployerId(Long adminId);
 
+    Job updateJob(Long jobId, Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId);
 }

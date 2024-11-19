@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface IEmployerService {
-    Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String address, String companyName, MultipartFile avatar)  throws SQLException, IOException;
+    Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, MultipartFile avatar, String companyName,  Long addressId)  throws SQLException, IOException;
 
     List<Admin> getEmployer();
 
@@ -18,4 +18,7 @@ public interface IEmployerService {
     Admin getEmployer(String email);
 
     byte[] getAvatarByEmail(String email) throws SQLException;
+
+    Admin updateEmployer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar,
+                      String gender, String telephone, String companyName,  Long addressId) throws SQLException, IOException ;
 }

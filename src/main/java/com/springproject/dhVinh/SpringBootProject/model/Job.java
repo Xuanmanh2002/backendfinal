@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -23,6 +24,8 @@ public class Job {
     private String jobName;
     @Column(name = "experience")
     private String experience;
+    @Column(name = "price")
+    private String price;
     @Column(name = "applicationDeadline")
     private Date applicationDeadline;
     @Column(name = "recruitmentDetails")
@@ -41,5 +44,9 @@ public class Job {
     @JsonBackReference
     @JoinColumn(name = "category_id")
     private Category categories;
+
+    @OneToMany(mappedBy = "jobs" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonBackReference
+    private List<ApplicationDocuments> applicationDocuments ;
 
 }

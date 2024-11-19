@@ -1,19 +1,18 @@
 package com.springproject.dhVinh.SpringBootProject.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.springproject.dhVinh.SpringBootProject.exception.AdminAlreadyExistsException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.request.LoginRequest;
-import com.springproject.dhVinh.SpringBootProject.response.AdminResponse;
-import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
+import com.springproject.dhVinh.SpringBootProject.response.CustomerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.JwtResponse;
 import com.springproject.dhVinh.SpringBootProject.security.admin.AdminDetail;
 import com.springproject.dhVinh.SpringBootProject.security.admin.AdminDetailService;
 import com.springproject.dhVinh.SpringBootProject.security.jwt.JwtUtils;
-import com.springproject.dhVinh.SpringBootProject.service.IEmployerService;
+import com.springproject.dhVinh.SpringBootProject.service.ICustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,9 +38,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
-public class LoginEmployerController {
-
-    private final IEmployerService employerService;
+public class LoginCustomerController {
+    private final ICustomerService customerService;
 
     private final AuthenticationManager authenticationManager;
 
@@ -53,20 +51,18 @@ public class LoginEmployerController {
 
     private final PasswordEncoder passwordEncoder;
 
-    @PostMapping(value = "/register-employer")
-    public ResponseEntity<EmployerResponse> registerEmployer(
-            @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            @RequestParam("firstName") String firstName,
-            @RequestParam("lastName") String lastName,
-            @RequestParam("birthDate") Date birthDate,
-            @RequestParam("gender") String gender,
-            @RequestParam("telephone") String telephone,
-            @RequestParam("addressId") Long addressId,
-            @RequestParam("companyName") String companyName,
-            @RequestParam("avatar") MultipartFile avatar) throws SQLException, IOException {
-        Admin savedAdmin = employerService.registerEmployer(email, password, firstName, lastName, birthDate, gender, telephone, avatar, companyName, addressId);
-        EmployerResponse response = new EmployerResponse(
+    @PostMapping(value = "/register-customer")
+    public ResponseEntity<CustomerResponse> registerCustomer(@RequestParam("email") String email,
+                                                             @RequestParam("password") String password,
+                                                             @RequestParam("firstName") String firstName,
+                                                             @RequestParam("lastName") String lastName,
+                                                             @RequestParam("birthDate") Date birthDate,
+                                                             @RequestParam("gender") String gender,
+                                                             @RequestParam("telephone") String telephone,
+                                                             @RequestParam("addressId") Long addressId,
+                                                             @RequestParam("avatar") MultipartFile avatar) throws SQLException, IOException {
+        Admin savedAdmin = customerService.registerCustomer(email, password, firstName, lastName, birthDate, gender, telephone, avatar, addressId);
+        CustomerResponse response = new CustomerResponse(
                 savedAdmin.getId(),
                 savedAdmin.getEmail(),
                 savedAdmin.getPassword(),
@@ -75,14 +71,13 @@ public class LoginEmployerController {
                 savedAdmin.getBirthDate(),
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
-                savedAdmin.getCompanyName(),
                 savedAdmin.getAddress().getId()
         );
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/login-employer")
-    public ResponseEntity<?> authenticateEmployer(@Valid @RequestBody LoginRequest request){
+    @PostMapping(value = "/login-customer")
+    public ResponseEntity<?> authenticateCustomer(@Valid @RequestBody LoginRequest request){
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -114,7 +109,7 @@ public class LoginEmployerController {
         ));
     }
 
-    @GetMapping("/check-role")
+    @GetMapping("/check-role-customer")
     public ResponseEntity<Map<String, String>> getRole(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
@@ -126,8 +121,6 @@ public class LoginEmployerController {
                 .orElse("ROLE_CUSTOMER");
         Map<String, String> response = new HashMap<>();
         response.put("role", role);
-
         return ResponseEntity.ok(response);
     }
-
 }

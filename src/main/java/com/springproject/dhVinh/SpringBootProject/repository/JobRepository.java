@@ -16,4 +16,6 @@ public interface JobRepository extends JpaRepository<Job, Long> {
    List<Job> findByAdminId(@Param("adminId") Long adminId);
 
     List<Job> findByAdmins(Admin admin);
+
+    List<Job> findByStatusTrue();
 }

@@ -1,8 +1,10 @@
 package com.springproject.dhVinh.SpringBootProject.service;
 
 import com.springproject.dhVinh.SpringBootProject.exception.AdminAlreadyExistsException;
+import com.springproject.dhVinh.SpringBootProject.model.Address;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.model.Role;
+import com.springproject.dhVinh.SpringBootProject.repository.AddressRepository;
 import com.springproject.dhVinh.SpringBootProject.repository.AdminRepository;
 import com.springproject.dhVinh.SpringBootProject.repository.RoleRepository;
 import jakarta.transaction.Transactional;
@@ -31,9 +33,11 @@ public class AdminService implements IAdminService {
 
     private final RoleRepository roleRepository;
 
+    private final AddressRepository addressRepository;
+
     @Override
     public Admin registerAdmin(String email, String password, String firstName, String lastName, Date birthDate,
-                               String gender, String telephone, String address, MultipartFile avatar)  throws SQLException, IOException {
+                               String gender, String telephone, MultipartFile avatar, Long addressId)  throws SQLException, IOException {
         Admin admin = new Admin();
         if (adminRepository.existsByEmail(email)) {
             throw new AdminAlreadyExistsException(email + " already exists");
@@ -47,6 +51,12 @@ public class AdminService implements IAdminService {
             Blob photoBlob = new SerialBlob(photoBytes);
             admin.setAvatar(photoBlob);
         }
+
+        Optional<Address> optionalAddress = addressRepository.findById(addressId);
+        if (!optionalAddress.isPresent()) {
+            throw new RuntimeException("Address not found");
+        }
+        Address address = optionalAddress.get();
         admin.setEmail(email);
         admin.setPassword(passwordEncoder.encode(password));
         admin.setFirstName(firstName);
@@ -103,7 +113,7 @@ public class AdminService implements IAdminService {
     }
 
     @Override
-    public Admin updateAdmin(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, String address) throws SQLException, IOException {
+    public Admin updateAdmin(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, Long addressId) throws SQLException, IOException {
         Optional<Admin> optionalAdmin = adminRepository.findByEmail(email);
         if (optionalAdmin.isPresent()) {
             Admin admin = optionalAdmin.get();
@@ -112,6 +122,11 @@ public class AdminService implements IAdminService {
             if (birthDate != null) {
                 admin.setBirthDate(birthDate);
             }
+            Optional<Address> optionalAddress = addressRepository.findById(addressId);
+            if (!optionalAddress.isPresent()) {
+                throw new RuntimeException("Address not found");
+            }
+            Address address = optionalAddress.get();
             admin.setGender(gender);
             admin.setAddress(address);
             admin.setTelephone(telephone);

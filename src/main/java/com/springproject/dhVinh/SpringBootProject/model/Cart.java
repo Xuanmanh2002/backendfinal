@@ -1,11 +1,14 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -23,11 +26,15 @@ public class Cart {
     private Double totalAmounts;
     @Column(name = "totalItems")
     private Long totalItems;
+    @Column(name = "totalValidityPeriod")
+    private Long totalValidityPeriod;
 
     @OneToMany(mappedBy = "carts", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<CartItem> cartItems;
+    @JsonBackReference
+    private List<CartItem> cartItems = new ArrayList<>();;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "admin_id")
     private Admin admins;
 

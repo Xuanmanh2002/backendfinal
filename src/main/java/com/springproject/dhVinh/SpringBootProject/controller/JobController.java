@@ -1,26 +1,26 @@
 package com.springproject.dhVinh.SpringBootProject.controller;
 
+import com.springproject.dhVinh.SpringBootProject.exception.AdminAlreadyExistsException;
+import com.springproject.dhVinh.SpringBootProject.exception.JobAlreadyExistException;
+import com.springproject.dhVinh.SpringBootProject.exception.PhotoRetrievalException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
-import com.springproject.dhVinh.SpringBootProject.model.Category;
 import com.springproject.dhVinh.SpringBootProject.model.Job;
 import com.springproject.dhVinh.SpringBootProject.repository.JobRepository;
 import com.springproject.dhVinh.SpringBootProject.response.AdminResponse;
+import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.JobResponse;
 import com.springproject.dhVinh.SpringBootProject.service.IAdminService;
 import com.springproject.dhVinh.SpringBootProject.service.IJobService;
-import com.springproject.dhVinh.SpringBootProject.service.JobService;
 import jakarta.servlet.http.HttpSession;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.sql.Date;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,7 +55,7 @@ public class JobController {
             httpSession.setAttribute("loggedInAdmin", admin);
 
             Job job = jobService.addJob(admin, jobResponse.getJobName(), jobResponse.getExperience(),
-                    jobResponse.getApplicationDeadline(), jobResponse.getRecruitmentDetails(),
+                    jobResponse.getPrice(),jobResponse.getApplicationDeadline(), jobResponse.getRecruitmentDetails(),
                     jobResponse.getCategoryId());
             jsonResponse.put("status", "success");
             jsonResponse.put("message", "Job created successfully");
@@ -79,6 +79,54 @@ public class JobController {
         return new ResponseEntity<>(jobs, HttpStatus.OK);
     }
 
+    @GetMapping("/active")
+    public ResponseEntity<List<JobResponse>> getAllActiveJobs() {
+        List<Job> jobs = jobService.getAllJobByStatusTrue();
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    employerResponse,
+                    job.getCategories().getId(),
+                    job.getCreateAt()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+    private EmployerResponse getEmployerResponse(Admin admin) {
+        EmployerResponse employerResponse = new EmployerResponse();
+        employerResponse.setId(admin.getId());
+        employerResponse.setEmail(admin.getEmail());
+        employerResponse.setFirstName(admin.getFirstName());
+        employerResponse.setLastName(admin.getLastName());
+        employerResponse.setBirthDate(admin.getBirthDate());
+        employerResponse.setGender(admin.getGender());
+        employerResponse.setTelephone(admin.getTelephone());
+        employerResponse.setAddressId(admin.getAddress().getId());
+        employerResponse.setCompanyName(admin.getCompanyName());
+
+        byte[] photoBytes = null;
+        Blob photoBlob = admin.getAvatar();
+        if (photoBlob != null) {
+            try {
+                photoBytes = photoBlob.getBytes(1, (int) photoBlob.length());
+                String avatarBase64 = Base64.getEncoder().encodeToString(photoBytes);
+                employerResponse.setAvatar(avatarBase64);
+            } catch (SQLException e) {
+                throw new PhotoRetrievalException("Error retrieving photo");
+            }
+        }
+
+        return employerResponse;
+    }
+
+
     @GetMapping("/all-job-by-employer")
     @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<JobResponse>> getAllJobsByEmployerEmail(Principal principal, HttpSession httpSession) {
@@ -91,27 +139,64 @@ public class JobController {
             errorResponse.put("message", "Admin not found");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
         httpSession.setAttribute("loggedInAdmin", admin);
         List<Job> jobs = jobService.getAllJobsByEmployerId(admin.getId());
-
-        // Kiểm tra nếu không có việc làm nào
         if (jobs.isEmpty()) {
             return ResponseEntity.ok(Collections.emptyList());
         }
-
         List<JobResponse> jobResponses = jobs.stream().map(job -> {
             return new JobResponse(
                     job.getId(),
                     job.getJobName(),
                     job.getExperience(),
+                    job.getPrice(),
                     job.getApplicationDeadline(),
                     job.getRecruitmentDetails(),
-                    job.getCategories().getId()
+                    job.getCategories().getId(),
+                    job.getCreateAt()
             );
         }).collect(Collectors.toList());
 
         return ResponseEntity.ok(jobResponses);
+    }
+
+    @DeleteMapping("/delete/{jobId}")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public void deleteCategory(@PathVariable("jobId") Long jobId){
+        jobService.cancelJob(jobId);
+    }
+
+    @PutMapping("/update/{jobId}")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Map<String, Object>> updateJob(
+            @PathVariable("jobId") Long jobId,
+            @RequestBody JobResponse response,
+            Principal principal,
+            HttpSession httpSession) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String email = principal.getName();
+            Admin admin = adminService.getAdmin(email);
+
+            if (admin == null) {
+                throw new AdminAlreadyExistsException("Admin not found");
+            }
+            httpSession.setAttribute("loggedInAdmin", admin);
+            Job updatedJob = jobService.updateJob(jobId, admin, response.getJobName(), response.getExperience(),
+                    response.getPrice(),response.getApplicationDeadline(), response.getRecruitmentDetails(), response.getCategoryId());
+            result.put("status", "success");
+            result.put("message", "Job updated successfully");
+            result.put("job", updatedJob);
+            return ResponseEntity.ok(result);
+        } catch (JobAlreadyExistException j) {
+            result.put("status", "error");
+            result.put("message", j.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);
+        } catch (RuntimeException e) {
+            result.put("status", "error");
+            result.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
+        }
     }
 
 }

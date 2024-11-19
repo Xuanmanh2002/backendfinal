@@ -18,9 +18,9 @@ public class AdminResponse {
     private String avatar;
     private String gender;
     private String telephone;
-    private String address;
+    private Long addressId;
 
-    public AdminResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String address) {
+    public AdminResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, Long addressId) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -29,20 +29,20 @@ public class AdminResponse {
         this.birthDate = birthDate;
         this.gender = gender;
         this.telephone = telephone;
-        this.address = address;
+        this.addressId = addressId;
     }
 
-    public AdminResponse(String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String address) {
+    public AdminResponse(String email, String firstName, String lastName, Date birthDate, String gender, String telephone, Long addressId) {
         this.email = email;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
         this.gender = gender;
         this.telephone = telephone;
-        this.address = address;
+        this.addressId = addressId;
     }
 
-    public AdminResponse(Long id, String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String address) {
+    public AdminResponse(Long id, String email, String firstName, String lastName, Date birthDate, String gender, String telephone, Long addressId) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -50,6 +50,6 @@ public class AdminResponse {
         this.birthDate = birthDate;
         this.gender = gender;
         this.telephone = telephone;
-        this.address = address;
+        this.addressId = addressId;
     }
 }

@@ -1,9 +1,13 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.sql.Blob;
 
 @Entity
 @Getter
@@ -21,14 +25,22 @@ public class ApplicationDocuments {
     private String email;
     @Column(name = "telephone")
     private String telephone;
-    @Column(name = "cv")
-    private String cv;
+    @JsonIgnore
+    @Lob
+    private Blob cv;
     @Column(name = "letter")
     private String letter;
     @Column(name = "status")
     private String status;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     @JoinColumn(name = "admin_id")
     private Admin admins;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    @JoinColumn(name = "jobs_id")
+    private Job jobs;
+
 }
