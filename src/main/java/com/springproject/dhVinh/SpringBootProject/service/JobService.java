@@ -103,4 +103,15 @@ public class JobService implements IJobService {
         return jobRepository.save(job);
     }
 
+    @Override
+    public Job updateActive(Long jobId, boolean status) {
+        Job job = jobRepository.findById(jobId).orElseThrow(() -> new RuntimeException("Job not found"));
+        job.setStatus(status);
+        return jobRepository.save(job);
+    }
+
+    @Override
+    public List<Job> getAllJobsWithEmployerGold() {
+        return jobRepository.findJobsByAdminSalaryRange("gold");
+    }
 }

@@ -18,12 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/api/customer")
 @RequiredArgsConstructor
 public class CustomerController {
     private final ICustomerService customerService;
 
-    @GetMapping("/list-customer")
+    @GetMapping("/list")
     public ResponseEntity<List<CustomerResponse>> getAdmins() throws SQLException {
         List<Admin> admins = customerService.getCustomer();
         List<CustomerResponse> customerResponses = new ArrayList<>();
@@ -52,7 +52,7 @@ public class CustomerController {
         }
     }
 
-    @DeleteMapping("/delete-customer/{email}")
+    @DeleteMapping("/delete-{email}")
     @PreAuthorize("hasRole('ROLE_CUSTOMER') or hasRole('ROLE_ADMIN')")
     public void deleteCustomer(@PathVariable String email) {
         customerService.deleteCustomer(email);

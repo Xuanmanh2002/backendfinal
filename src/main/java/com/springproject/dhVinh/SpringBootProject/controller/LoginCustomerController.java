@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/customer")
 @RequiredArgsConstructor
 public class LoginCustomerController {
     private final ICustomerService customerService;
@@ -51,7 +51,7 @@ public class LoginCustomerController {
 
     private final PasswordEncoder passwordEncoder;
 
-    @PostMapping(value = "/register-customer")
+    @PostMapping(value = "/register")
     public ResponseEntity<CustomerResponse> registerCustomer(@RequestParam("email") String email,
                                                              @RequestParam("password") String password,
                                                              @RequestParam("firstName") String firstName,
@@ -76,7 +76,7 @@ public class LoginCustomerController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/login-customer")
+    @PostMapping(value = "/login")
     public ResponseEntity<?> authenticateCustomer(@Valid @RequestBody LoginRequest request){
         Authentication authentication =
                 authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));

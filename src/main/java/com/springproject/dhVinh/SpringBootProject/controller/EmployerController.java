@@ -81,7 +81,7 @@ public class EmployerController {
         employerResponse.setTelephone(admin.getTelephone());
         employerResponse.setAddressId(admin.getAddress().getId());
         employerResponse.setCompanyName(admin.getCompanyName());
-
+        employerResponse.setSalaryRange(admin.getSalaryRange());
         byte[] photoBytes = null;
         Blob photoBlob = admin.getAvatar();
         if (photoBlob != null) {

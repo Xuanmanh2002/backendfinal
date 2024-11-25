@@ -20,6 +20,21 @@ public class EmployerResponse {
     private String telephone;
     private String companyName;
     private Long addressId;
+    private String salaryRange;
+
+    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String avatar, String gender, String telephone, String companyName, Long addressId, String salaryRange) {
+        this.id = id;
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.avatar = avatar;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.companyName = companyName;
+        this.addressId = addressId;
+        this.salaryRange = salaryRange;
+    }
 
     public EmployerResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, Long addressId) {
         this.id = id;

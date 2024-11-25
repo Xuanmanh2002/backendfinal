@@ -71,12 +71,27 @@ public class JobController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Job>> getAllJob(){
+    public ResponseEntity<List<JobResponse>> getAllJob() {
         List<Job> jobs = jobService.getAllJobs();
-        if(jobs.isEmpty()){
-            return  new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(jobs, HttpStatus.OK);
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    employerResponse,
+                    job.getCategories().getId(),
+                    job.getCreateAt(),
+                    job.getStatus()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
     }
 
     @GetMapping("/active")
@@ -197,6 +212,36 @@ public class JobController {
             result.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(result);
         }
+    }
+
+    @PutMapping("/update-status/{jobId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Job updateJobStatus(@PathVariable Long jobId, @RequestParam boolean status) {
+        return jobService.updateActive(jobId, status);
+    }
+
+    @GetMapping("/all-job-with-gold")
+    public ResponseEntity<List<JobResponse>> getAllJobWithGold() {
+        List<Job> jobs = jobService.getAllJobsWithEmployerGold();
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    employerResponse,
+                    job.getCategories().getId(),
+                    job.getCreateAt(),
+                    job.getStatus()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
     }
 
 }

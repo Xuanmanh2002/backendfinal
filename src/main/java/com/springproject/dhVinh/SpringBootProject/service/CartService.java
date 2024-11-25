@@ -132,13 +132,17 @@ public class CartService implements ICartService{
                 .orElseThrow(() -> new RuntimeException("CartItem not found"));
         cart.getCartItems().remove(cartItem);
         cartItemRepository.delete(cartItem);
-        long totalQuantity = cartItemRepository.sumQuantityByCart(cart.getId());
-        double totalPrice = cartItemRepository.sumTotalPriceByCart(cart.getId());
-        long totalValidityPeriod = cartItemRepository.sumValidityPeriodByCart(cart.getId());
-        cart.setTotalValidityPeriod(totalValidityPeriod);
-        cart.setTotalItems(totalQuantity);
-        cart.setTotalAmounts(totalPrice);
-        cartRepository.save(cart);
+        if (cart.getCartItems().isEmpty()) {
+            cartRepository.delete(cart);
+        } else {
+            long totalQuantity = cartItemRepository.sumQuantityByCart(cart.getId());
+            double totalPrice = cartItemRepository.sumTotalPriceByCart(cart.getId());
+            long totalValidityPeriod = cartItemRepository.sumValidityPeriodByCart(cart.getId());
+            cart.setTotalValidityPeriod(totalValidityPeriod);
+            cart.setTotalItems(totalQuantity);
+            cart.setTotalAmounts(totalPrice);
+            cartRepository.save(cart);
+        }
     }
 
     @Override

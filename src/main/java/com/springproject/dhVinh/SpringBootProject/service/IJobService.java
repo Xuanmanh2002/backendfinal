@@ -19,4 +19,8 @@ public interface IJobService {
     List<Job> getAllJobsByEmployerId(Long adminId);
 
     Job updateJob(Long jobId, Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId);
+
+    Job updateActive(Long jobId, boolean status);
+
+    List<Job> getAllJobsWithEmployerGold();
 }
