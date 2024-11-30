@@ -145,4 +145,14 @@ public class AdminService implements IAdminService {
         }
     }
 
+    @Override
+    public Long getCountByRoleEmployer() {
+        return adminRepository.countByRoleEmployer();
+    }
+
+    @Override
+    public Long getCountByRoleCustomer() {
+        return adminRepository.countByRoleCustomer();
+    }
+
 }

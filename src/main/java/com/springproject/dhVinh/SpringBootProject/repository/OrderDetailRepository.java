@@ -1,5 +1,7 @@
 package com.springproject.dhVinh.SpringBootProject.repository;
 
+import com.springproject.dhVinh.SpringBootProject.model.Admin;
+import com.springproject.dhVinh.SpringBootProject.model.CartItem;
 import com.springproject.dhVinh.SpringBootProject.model.OrderDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +26,10 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     @Query("SELECT od FROM OrderDetail od WHERE od.orders.id = :orderId")
     List<OrderDetail> findByOrderId(@Param("orderId") Long orderId);
+
+    @Query("SELECT od FROM OrderDetail od JOIN od.orders o WHERE o.admins.id = :adminId")
+    List<OrderDetail> findByAdmin(@Param("adminId") Long adminId);
+
+    @Query("SELECT COUNT(od) FROM OrderDetail od WHERE od.orders.id = :orderId")
+    long countByOrderId(@Param("orderId") Long orderId);
 }

@@ -4,12 +4,14 @@ import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.model.Cart;
 import com.springproject.dhVinh.SpringBootProject.model.Order;
 import com.springproject.dhVinh.SpringBootProject.model.OrderDetail;
+import com.springproject.dhVinh.SpringBootProject.response.CartResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.OrderDetailResponse;
 import com.springproject.dhVinh.SpringBootProject.response.OrderResponse;
 import com.springproject.dhVinh.SpringBootProject.service.ICartService;
 import com.springproject.dhVinh.SpringBootProject.service.IEmployerService;
 import com.springproject.dhVinh.SpringBootProject.service.IOrderService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,27 +74,8 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/get-by-employer")
-    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getOrderByEmployer(Principal principal) {
-        try {
-            String email = principal.getName();
-            Admin admin = employerService.getEmployer(email);
-
-            if (admin == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body("Admin not found for email: " + email);
-            }
-
-            Order order = orderService.getOrderByEmployer(admin);
-            return ResponseEntity.ok(order);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
-    }
-
     @DeleteMapping("/delete/{orderId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> deleteOrder(@PathVariable Long orderId) {
         try {
             orderService.deleteOrder(orderId);
@@ -103,7 +86,7 @@ public class OrderController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<Order> orders = orderService.getAllOrder();
         if (orders.isEmpty()) {
@@ -149,21 +132,6 @@ public class OrderController {
         return employerResponse;
     }
 
-    @GetMapping("/get-employer")
-    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> getEmployerDetails(Principal principal) {
-        try {
-            String email = principal.getName();
-            Admin admin = employerService.getEmployer(email);
-            if (admin == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Admin not found");
-            }
-            return ResponseEntity.ok(admin);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
-        }
-    }
-
     @GetMapping("/all-order-detail/{orderId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<OrderDetailResponse>> getAllOrderDetail(@PathVariable Long orderId) {
@@ -181,4 +149,77 @@ public class OrderController {
                 .toList();
         return ResponseEntity.ok(responseList);
     }
+
+    @GetMapping("/total-amounts")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Long> getTotalAmounts() {
+        try {
+            long totalAmounts = orderService.countTotalAmounts();
+            return ResponseEntity.ok(totalAmounts);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/order-details")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<?> getOrderDetailsByAdmin(Principal principal) {
+            String email = principal.getName();
+            Admin admin = employerService.getEmployer(email);
+            List<OrderDetail> orderDetails = orderService.getAllOrderDetailByAdmin(admin.getId());
+            List<OrderDetailResponse> response = orderDetails.stream()
+                    .map(orderDetail -> new OrderDetailResponse(
+                            orderDetail.getId(),
+                            orderDetail.getQuantity(),
+                            orderDetail.getPrice(),
+                            orderDetail.getTotalAmounts(),
+                            orderDetail.getTotalValidityPeriod(),
+                            orderDetail.getServices().getId(),
+                            orderDetail.getOrders().getId()
+                    ))
+                    .toList();
+            return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/order-by-employer")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
+    public ResponseEntity<OrderResponse> getOrderByEmployer(Principal principal) {
+        String email = principal.getName();
+        Admin admin = employerService.getEmployer(email);
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Order order = orderService.getOrderByEmployer(admin);
+        if (order == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        EmployerResponse employerResponse = getEmployerResponse(admin);
+        Long totalItems = (long) order.getOrderDetails().size();
+        Double totalAmounts = order.getOrderDetails()
+                .stream()
+                .mapToDouble(detail -> detail.getServices().getPrice())
+                .sum();
+        Long totalValidityPeriod = order.getOrderDetails()
+                .stream()
+                .mapToLong(detail -> detail.getServices().getValidityPeriod())
+                .sum();
+        OrderResponse orderResponse= new OrderResponse(
+                order.getId(),
+                order.getOrderDate(),
+                order.getTotalAmounts(),
+                order.getTotalValidityPeriod(),
+                employerResponse
+        );
+        return ResponseEntity.ok(orderResponse);
+    }
+
+    @DeleteMapping("/delete-order-details")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    public ResponseEntity<?> deleteOrderDetail(@RequestParam  Long serviceId, Principal principal) {
+            String email = principal.getName();
+            Admin admin = employerService.getEmployer(email);
+            orderService.deleteOrderDetailToOrder(serviceId, admin);
+            return ResponseEntity.ok("Chi tiết đơn hàng đã được xóa thành công.");
+    }
+
 }

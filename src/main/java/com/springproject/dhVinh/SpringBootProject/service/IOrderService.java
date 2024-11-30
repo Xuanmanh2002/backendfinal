@@ -22,4 +22,10 @@ public interface IOrderService {
     Order findByEmployer(Admin admin);
 
     List<OrderDetail> getAllOrderDetailByOrder(Long orderId);
+
+    long countTotalAmounts();
+
+    List<OrderDetail> getAllOrderDetailByAdmin(Long adminId);
+
+    void deleteOrderDetailToOrder(Long serviceId, Admin admin);
 }

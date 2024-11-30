@@ -138,4 +138,9 @@ public class EmployerService implements IEmployerService {
             throw new AdminAlreadyExistsException("Employer with email " + email + " not found.");
         }
     }
+
+    @Override
+    public List<Admin> findByRank() {
+        return adminRepository.findByRank();
+    }
 }

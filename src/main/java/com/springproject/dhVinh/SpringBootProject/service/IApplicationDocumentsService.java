@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-public interface IADService {
+public interface IApplicationDocumentsService {
     ApplicationDocuments addAD(Admin admin, String fullname, String email, String telephone, MultipartFile cv, String letter, Long jobId) throws SQLException, IOException;
 
     void cancleAD(Long applicationDocumentsId);
@@ -17,5 +17,8 @@ public interface IADService {
 
     ApplicationDocuments updateAD(Admin admin, Long applicationDocumentsId, String fullname, String email, String telephone, String cv, String letter, Long jobId);
 
-    List<ApplicationDocuments> getAllApplicationDocumentByEmployerID(Long adminId);
+    List<ApplicationDocuments> getAllJobByAdmin(Long adminId);
+
+
+
 }

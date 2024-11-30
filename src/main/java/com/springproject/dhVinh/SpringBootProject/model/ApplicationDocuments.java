@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Blob;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -25,6 +26,8 @@ public class ApplicationDocuments {
     private String email;
     @Column(name = "telephone")
     private String telephone;
+    @Column(name = "createAt")
+    private LocalDate createAt;
     @JsonIgnore
     @Lob
     private Blob cv;

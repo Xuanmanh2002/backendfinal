@@ -18,7 +18,10 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByAdmins(Admin admin);
 
     List<Job> findByStatusTrue();
+    List<Job> findByStatusFalse();
 
-    @Query("SELECT j FROM Job j WHERE j.admins.salaryRange = :salaryRange")
-    List<Job> findJobsByAdminSalaryRange(@Param("salaryRange") String salaryRange);
+    @Query("SELECT j FROM Job j WHERE j.admins.rank IN (:rank)")
+    List<Job> findJobsByAdminRank(@Param("rank") List<String> rank);
+
+
 }

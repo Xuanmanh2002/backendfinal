@@ -44,8 +44,8 @@ public class Admin {
     private Boolean status;
     @Column(name = "companyName")
     private String companyName;
-    @Column(name = "salaryRange")
-    private String salaryRange;
+    @Column(name = "admin_rank")
+    private String rank;
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = {CascadeType.PERSIST,
                     CascadeType.MERGE, CascadeType.DETACH})
@@ -69,4 +69,9 @@ public class Admin {
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonManagedReference
     private Address address;
+
+    @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Notification> notifications;
+
 }

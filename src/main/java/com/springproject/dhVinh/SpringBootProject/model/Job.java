@@ -30,6 +30,10 @@ public class Job {
     private Date applicationDeadline;
     @Column(name = "recruitmentDetails")
     private String recruitmentDetails;
+    @Column(name = "totalValidityPeriod")
+    private Long totalValidityPeriod;
+    @Column(name = "activationDate")
+    private LocalDate activationDate;
     @Column(name = "status")
     private Boolean status;
     @Column(name = "createAt")

@@ -24,4 +24,13 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     @Query("SELECT a FROM Admin a JOIN a.roles r WHERE r.name = 'ROLE_CUSTOMER'")
     List<Admin> findByRoleCustomer();
+
+    @Query("SELECT COUNT(a) FROM Admin a JOIN a.roles r WHERE r.name = 'ROLE_EMPLOYER'")
+    Long countByRoleEmployer();
+
+    @Query("SELECT COUNT(a) FROM Admin a JOIN a.roles r WHERE r.name = 'ROLE_CUSTOMER'")
+    Long countByRoleCustomer();
+
+    @Query("SELECT a FROM Admin a WHERE a.rank IN ('silver', 'gold', 'diamond')")
+    List<Admin> findByRank();
 }

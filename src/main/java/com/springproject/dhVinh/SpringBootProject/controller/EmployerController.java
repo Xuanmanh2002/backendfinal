@@ -81,7 +81,7 @@ public class EmployerController {
         employerResponse.setTelephone(admin.getTelephone());
         employerResponse.setAddressId(admin.getAddress().getId());
         employerResponse.setCompanyName(admin.getCompanyName());
-        employerResponse.setSalaryRange(admin.getSalaryRange());
+        employerResponse.setRank(admin.getRank());
         byte[] photoBytes = null;
         Blob photoBlob = admin.getAvatar();
         if (photoBlob != null) {
@@ -123,6 +123,22 @@ public class EmployerController {
                 savedAdmin.getAddress().getId()
         );
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("list-employer-by-rank")
+    public ResponseEntity<List<EmployerResponse>> getEmployerRank() throws SQLException {
+        List<Admin> admins = employerService.findByRank();
+        List<EmployerResponse> employerResponses = new ArrayList<>();
+        for (Admin admin : admins) {
+            byte[] photoBytes = employerService.getAvatarByEmail(admin.getEmail());
+            if (photoBytes != null && photoBytes.length > 0) {
+                String base64Photo = Base64.encodeBase64String(photoBytes);
+                EmployerResponse employerResponse = getEmployerResponse(admin);
+                employerResponse.setAvatar(base64Photo);
+                employerResponses.add(employerResponse);
+            }
+        }
+        return ResponseEntity.ok(employerResponses);
     }
 
 }

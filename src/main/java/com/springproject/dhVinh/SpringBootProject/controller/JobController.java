@@ -85,6 +85,8 @@ public class JobController {
                     job.getPrice(),
                     job.getApplicationDeadline(),
                     job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
                     employerResponse,
                     job.getCategories().getId(),
                     job.getCreateAt(),
@@ -167,8 +169,11 @@ public class JobController {
                     job.getPrice(),
                     job.getApplicationDeadline(),
                     job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
                     job.getCategories().getId(),
-                    job.getCreateAt()
+                    job.getCreateAt(),
+                    job.getStatus()
             );
         }).collect(Collectors.toList());
 
@@ -220,7 +225,7 @@ public class JobController {
         return jobService.updateActive(jobId, status);
     }
 
-    @GetMapping("/all-job-with-gold")
+    @GetMapping("/all-job-with-range")
     public ResponseEntity<List<JobResponse>> getAllJobWithGold() {
         List<Job> jobs = jobService.getAllJobsWithEmployerGold();
         if (jobs.isEmpty()) {
@@ -235,6 +240,8 @@ public class JobController {
                     job.getPrice(),
                     job.getApplicationDeadline(),
                     job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
                     employerResponse,
                     job.getCategories().getId(),
                     job.getCreateAt(),

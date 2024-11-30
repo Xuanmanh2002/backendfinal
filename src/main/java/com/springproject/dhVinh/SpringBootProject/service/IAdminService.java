@@ -27,4 +27,7 @@ public interface IAdminService {
     Admin updateAdmin(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar,
                       String gender, String telephone, Long addressId) throws SQLException, IOException ;
 
+    Long getCountByRoleEmployer();
+
+    Long getCountByRoleCustomer();
 }

@@ -119,4 +119,18 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/count-employers")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Long> getCountEmployers() {
+        Long count = adminService.getCountByRoleEmployer();
+        return ResponseEntity.ok(count);
+    }
+
+    @GetMapping("/count-customers")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Long> getCountCustomers() {
+        Long count = adminService.getCountByRoleCustomer();
+        return ResponseEntity.ok(count);
+    }
+
 }

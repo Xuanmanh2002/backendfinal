@@ -20,9 +20,9 @@ public class EmployerResponse {
     private String telephone;
     private String companyName;
     private Long addressId;
-    private String salaryRange;
+    private String rank;
 
-    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String avatar, String gender, String telephone, String companyName, Long addressId, String salaryRange) {
+    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String avatar, String gender, String telephone, String companyName, Long addressId, String rank) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -33,7 +33,7 @@ public class EmployerResponse {
         this.telephone = telephone;
         this.companyName = companyName;
         this.addressId = addressId;
-        this.salaryRange = salaryRange;
+        this.rank = rank;
     }
 
     public EmployerResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, Long addressId) {

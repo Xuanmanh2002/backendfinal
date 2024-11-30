@@ -15,12 +15,13 @@ import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class ADService implements IADService {
+public class ApplicationDocumentsService implements IApplicationDocumentsService {
 
     private final ApplicationDocumentsRepository applicationDocumentsRepository;
 
@@ -54,6 +55,8 @@ public class ADService implements IADService {
         applicationDocuments.setLetter(letter);
         applicationDocuments.setStatus("CV tiếp nhận");
         applicationDocuments.setJobs(job);
+        LocalDate createdDate = LocalDate.now();
+        applicationDocuments.setCreateAt(createdDate);
         return applicationDocumentsRepository.save(applicationDocuments);
 
     }
@@ -79,7 +82,9 @@ public class ADService implements IADService {
     }
 
     @Override
-    public List<ApplicationDocuments> getAllApplicationDocumentByEmployerID(Long adminId) {
-        return List.of();
+    public List<ApplicationDocuments> getAllJobByAdmin(Long adminId) {
+        return applicationDocumentsRepository.getAllJobByAdmin(adminId);
     }
+
+
 }

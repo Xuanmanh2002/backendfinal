@@ -21,4 +21,6 @@ public interface IEmployerService {
 
     Admin updateEmployer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar,
                       String gender, String telephone, String companyName,  Long addressId) throws SQLException, IOException ;
+
+    List<Admin> findByRank();
 }
