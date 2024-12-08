@@ -3,6 +3,7 @@ package com.springproject.dhVinh.SpringBootProject.controller;
 import com.springproject.dhVinh.SpringBootProject.exception.PhotoRetrievalException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.model.ApplicationDocuments;
+import com.springproject.dhVinh.SpringBootProject.model.Job;
 import com.springproject.dhVinh.SpringBootProject.response.ApplicationDocumentsResponse;
 import com.springproject.dhVinh.SpringBootProject.response.CustomerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
@@ -45,7 +46,7 @@ public class ApplicationDocumentsController {
             Principal principal, HttpSession httpSession) throws SQLException, IOException {
 
         String customerEmail = principal.getName();
-        Admin admin = customerService.getCustomer(customerEmail);
+        Admin admin = customerService.getCustomerByEmail(customerEmail);
 
         ApplicationDocuments applicationDocuments = adService.addAD(
                 admin, fullName, email, telephone, cv, letter, jobId);
@@ -65,7 +66,7 @@ public class ApplicationDocumentsController {
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<List<ApplicationDocumentsResponse>> getAllByEmployer(Principal principal) throws SQLException {
         String employerEmail = principal.getName();
-        Admin employer = customerService.getCustomer(employerEmail);
+        Admin employer = customerService.getCustomerByEmail(employerEmail);
         List<ApplicationDocuments> documents = adService.getAllJobByAdmin(employer.getId());
         List<ApplicationDocumentsResponse> responses = documents.stream().map(applicationDocuments -> {
             CustomerResponse customerResponse = getCustomerResponse(applicationDocuments.getAdmins());
@@ -122,5 +123,52 @@ public class ApplicationDocumentsController {
     @DeleteMapping("/delete/{applicationDocumentsId}")
     public void deleteApplicationDocuments(@PathVariable("applicationDocumentsId") Long applicationDocumentsId){
         adService.cancleAD(applicationDocumentsId);
+    }
+
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ROLE_CUSTOMER')")
+    public ResponseEntity<List<ApplicationDocumentsResponse>> getAllByCustomer(Principal principal) throws SQLException {
+        String customerEmail = principal.getName();
+        Admin customer = customerService.getCustomerByEmail(customerEmail);
+        List<ApplicationDocuments> documents = adService.getAllJobByCustomer(customer.getId());
+        List<ApplicationDocumentsResponse> responses = documents.stream().map(applicationDocuments -> {
+            CustomerResponse customerResponse = getCustomerResponse(applicationDocuments.getAdmins());
+            byte[] photoBytes = null;
+            Blob photoBlob = applicationDocuments.getCv();
+            if (photoBlob != null) {
+                try {
+                    photoBytes = photoBlob.getBytes(1, (int) photoBlob.length());
+                } catch (SQLException e) {
+                    throw new PhotoRetrievalException("Error retrieving CV data");
+                }
+            }
+            Job job = applicationDocuments.getJobs();
+            Admin employer = job != null ? job.getAdmins() : null;
+            return new ApplicationDocumentsResponse(
+                    applicationDocuments.getId(),
+                    applicationDocuments.getFullName(),
+                    applicationDocuments.getEmail(),
+                    applicationDocuments.getTelephone(),
+                    photoBytes,
+                    applicationDocuments.getLetter(),
+                    applicationDocuments.getStatus(),
+                    applicationDocuments.getCreateAt(),
+                    customerResponse,
+                    job != null ? job.getId() : null,
+                    job != null ? job.getJobName() : null,
+                    employer != null ? employer.getId() : null,
+                    employer != null ? employer.getCompanyName() : null
+            );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @PutMapping("/update-status/{id}")
+    public ResponseEntity<ApplicationDocuments> updateStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        ApplicationDocuments updatedApplication = adService.updateStatus(id, status);
+        return ResponseEntity.ok(updatedApplication);
     }
 }

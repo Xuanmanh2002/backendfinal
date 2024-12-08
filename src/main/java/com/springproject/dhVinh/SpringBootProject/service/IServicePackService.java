@@ -12,4 +12,6 @@ public interface IServicePackService {
     void deleteSericePack(Long servicePackId);
 
     ServicePack updateServicePack(Long servicePackId, String serviceName, Double price, Long quantity, Long validityPeriod, String description);
+
+    ServicePack findById(Long servicePackId);
 }

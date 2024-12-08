@@ -19,12 +19,30 @@ public class EmployerResponse {
     private String gender;
     private String telephone;
     private String companyName;
-    private Long addressId;
     private String rank;
+    private String scale;
+    private String fieldActivity;
+    private Long addressId;
 
-    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String avatar, String gender, String telephone, String companyName, Long addressId, String rank) {
+    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, String scale, String fieldActivity, Long addressId) {
         this.id = id;
         this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.companyName = companyName;
+        this.rank = rank;
+        this.scale = scale;
+        this.fieldActivity = fieldActivity;
+        this.addressId = addressId;
+    }
+
+    public EmployerResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String avatar, String gender, String telephone, String companyName, String scale, String fieldActivity, Long addressId) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.birthDate = birthDate;
@@ -32,11 +50,12 @@ public class EmployerResponse {
         this.gender = gender;
         this.telephone = telephone;
         this.companyName = companyName;
+        this.scale = scale;
+        this.fieldActivity = fieldActivity;
         this.addressId = addressId;
-        this.rank = rank;
     }
 
-    public EmployerResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, Long addressId) {
+    public EmployerResponse(Long id, String email, String password, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, String scale, String fieldActivity, Long addressId) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -46,29 +65,8 @@ public class EmployerResponse {
         this.gender = gender;
         this.telephone = telephone;
         this.companyName = companyName;
-        this.addressId = addressId;
-    }
-
-    public EmployerResponse(String email, String firstName, String lastName, Date birthDate,  String gender, String telephone, String companyName, Long addressId) {
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.birthDate = birthDate;
-        this.gender = gender;
-        this.telephone = telephone;
-        this.companyName = companyName;
-        this.addressId = addressId;
-    }
-
-    public EmployerResponse(Long id, String email, String firstName, String lastName, Date birthDate, String gender, String telephone, String companyName, Long addressId) {
-        this.id = id;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.birthDate = birthDate;
-        this.gender = gender;
-        this.telephone = telephone;
-        this.companyName = companyName;
+        this.scale = scale;
+        this.fieldActivity = fieldActivity;
         this.addressId = addressId;
     }
 }

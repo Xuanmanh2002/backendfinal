@@ -23,5 +23,10 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @Query("SELECT j FROM Job j WHERE j.admins.rank IN (:rank)")
     List<Job> findJobsByAdminRank(@Param("rank") List<String> rank);
 
+    @Query("SELECT j FROM Job j WHERE j.admins.rank IN (:rank)")
+    List<Job> findJobsByAdminRankDiamond(@Param("rank") List<String> rank);
 
+
+    @Query("SELECT j FROM Job j WHERE j.admins.id = :adminId AND j.status = true")
+    List<Job> findByAdminIdAndStatusTrue(@Param("adminId") Long adminId);
 }

@@ -46,6 +46,10 @@ public class Admin {
     private String companyName;
     @Column(name = "admin_rank")
     private String rank;
+    @Column(name = "scale")
+    private String scale;
+    @Column(name = "fieldActivity")
+    private String fieldActivity;
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = {CascadeType.PERSIST,
                     CascadeType.MERGE, CascadeType.DETACH})
@@ -67,7 +71,7 @@ public class Admin {
     private List<Cart> carts;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonIgnore
     private Address address;
 
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)

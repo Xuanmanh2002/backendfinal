@@ -86,7 +86,7 @@ public class OrderController {
     }
 
     @GetMapping("/all")
-    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<Order> orders = orderService.getAllOrder();
         if (orders.isEmpty()) {

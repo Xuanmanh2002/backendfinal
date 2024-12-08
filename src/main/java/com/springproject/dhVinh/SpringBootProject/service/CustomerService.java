@@ -79,15 +79,21 @@ public class CustomerService implements ICustomerService {
 
     @Transactional
     @Override
-    public void deleteCustomer(String email) {
-        Admin adm = getCustomer(email);
+    public void deleteCustomer(Long id) {
+        Admin adm = getCustomer(id);
         if (adm != null) {
-            adminRepository.deleteByEmail(email);
+            adminRepository.deleteById(id);
         }
     }
 
     @Override
-    public Admin getCustomer(String email) {
+    public Admin getCustomer(Long id) {
+        return adminRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Customer not found"));
+    }
+
+    @Override
+    public Admin getCustomerByEmail(String email) {
         return adminRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Customer not found"));
     }
@@ -108,33 +114,33 @@ public class CustomerService implements ICustomerService {
     @Override
     public Admin updateCustomer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, Long addressId) throws SQLException, IOException {
         Optional<Admin> optionalAdmin = adminRepository.findByEmail(email);
-        if (optionalAdmin.isPresent()) {
-            Admin admin = optionalAdmin.get();
-            admin.setFirstName(firstName);
-            admin.setLastName(lastName);
-            if (birthDate != null) {
-                admin.setBirthDate(birthDate);
-            }
-            Optional<Address> optionalAddress = addressRepository.findById(addressId);
-            if (!optionalAddress.isPresent()) {
-                throw new RuntimeException("Address not found");
-            }
-            Address address = optionalAddress.get();
-            admin.setGender(gender);
-            admin.setAddress(address);
-            admin.setTelephone(telephone);
-            if (avatar != null && !avatar.isEmpty()) {
-                byte[] photoBytes = avatar.getBytes();
-                Blob photoBlob = new SerialBlob(photoBytes);
-                admin.setAvatar(photoBlob);
-            }
-            admin.setRegistrationDate(LocalDate.now());
-            admin.setStatus(true);
-            admin.setCompanyName(null);
-
-            return adminRepository.save(admin);
-        } else {
+        if (optionalAdmin.isEmpty()) {
             throw new AdminAlreadyExistsException("Customer with email " + email + " not found.");
         }
+
+        Admin admin = optionalAdmin.get();
+        admin.setFirstName(firstName);
+        admin.setLastName(lastName);
+
+        if (birthDate != null) {
+            admin.setBirthDate(birthDate);
+        }
+
+        if (addressId != null) {
+            Address address = addressRepository.findById(addressId)
+                    .orElseThrow(() -> new RuntimeException("Address not found"));
+            admin.setAddress(address);
+        }
+
+        admin.setGender(gender);
+        admin.setTelephone(telephone);
+
+        if (avatar != null && !avatar.isEmpty()) {
+            byte[] photoBytes = avatar.getBytes();
+            Blob photoBlob = new SerialBlob(photoBytes);
+            admin.setAvatar(photoBlob);
+        }
+
+        return adminRepository.save(admin);
     }
 }

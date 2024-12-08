@@ -62,4 +62,10 @@ public class ServicePackService implements IServicePackService {
             throw new ServicePackAlreadyExistsException("Service with ID " + servicePackId + " not found.");
         }
     }
+
+    @Override
+    public ServicePack findById(Long servicePackId) {
+        Optional<ServicePack> servicePack = servicePackRepository.findById(servicePackId);
+        return servicePack.orElse(null);
+    }
 }

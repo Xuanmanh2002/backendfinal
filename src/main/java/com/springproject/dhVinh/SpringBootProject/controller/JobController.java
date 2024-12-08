@@ -39,8 +39,7 @@ public class JobController {
     @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, Object>> saveJob(
             @RequestBody JobResponse jobResponse,
-            Principal principal,
-            HttpSession httpSession) {
+            Principal principal) {
         Map<String, Object> jsonResponse = new HashMap<>();
         try {
             String email = principal.getName();
@@ -51,22 +50,34 @@ public class JobController {
                 jsonResponse.put("message", "Admin not found");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(jsonResponse);
             }
-
-            httpSession.setAttribute("loggedInAdmin", admin);
-
-            Job job = jobService.addJob(admin, jobResponse.getJobName(), jobResponse.getExperience(),
-                    jobResponse.getPrice(),jobResponse.getApplicationDeadline(), jobResponse.getRecruitmentDetails(),
-                    jobResponse.getCategoryId());
+            Job job = jobService.addJob(
+                    admin,
+                    jobResponse.getJobName(),
+                    jobResponse.getExperience(),
+                    jobResponse.getPrice(),
+                    jobResponse.getApplicationDeadline(),
+                    jobResponse.getRecruitmentDetails(),
+                    jobResponse.getCategoryId(),
+                    jobResponse.getRanker(),
+                    jobResponse.getQuantity(),
+                    jobResponse.getWorkingForm(),
+                    jobResponse.getGender()
+            );
             jsonResponse.put("status", "success");
             jsonResponse.put("message", "Job created successfully");
             jsonResponse.put("job", job);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(jsonResponse);
+            return ResponseEntity.ok(jsonResponse);
 
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             jsonResponse.put("status", "error");
-            jsonResponse.put("message", e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(jsonResponse);
+            jsonResponse.put("message", "Invalid input: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(jsonResponse);
+
+        } catch (Exception e) {
+            jsonResponse.put("status", "error");
+            jsonResponse.put("message", "Internal error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(jsonResponse);
         }
     }
 
@@ -88,9 +99,41 @@ public class JobController {
                     job.getTotalValidityPeriod(),
                     job.getActivationDate(),
                     employerResponse,
-                    job.getCategories().getId(),
                     job.getCreateAt(),
-                    job.getStatus()
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+
+    @GetMapping("/all-job/{adminId}/active")
+    public ResponseEntity<List<JobResponse>> getJobsByAdminAndStatusTrue(@PathVariable Long adminId) {
+        List<Job> jobs = jobService.getAllJobStatusTrueByEmployer(adminId);
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
             );
         }).collect(Collectors.toList());
         return ResponseEntity.ok(jobResponses);
@@ -108,9 +151,16 @@ public class JobController {
                     job.getPrice(),
                     job.getApplicationDeadline(),
                     job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
                     employerResponse,
-                    job.getCategories().getId(),
-                    job.getCreateAt()
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
             );
         }).collect(Collectors.toList());
         return ResponseEntity.ok(jobResponses);
@@ -127,6 +177,8 @@ public class JobController {
         employerResponse.setTelephone(admin.getTelephone());
         employerResponse.setAddressId(admin.getAddress().getId());
         employerResponse.setCompanyName(admin.getCompanyName());
+        employerResponse.setScale(admin.getScale());
+        employerResponse.setFieldActivity(admin.getFieldActivity());
 
         byte[] photoBytes = null;
         Blob photoBlob = admin.getAvatar();
@@ -171,9 +223,13 @@ public class JobController {
                     job.getRecruitmentDetails(),
                     job.getTotalValidityPeriod(),
                     job.getActivationDate(),
-                    job.getCategories().getId(),
                     job.getCreateAt(),
-                    job.getStatus()
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
             );
         }).collect(Collectors.toList());
 
@@ -203,7 +259,7 @@ public class JobController {
             }
             httpSession.setAttribute("loggedInAdmin", admin);
             Job updatedJob = jobService.updateJob(jobId, admin, response.getJobName(), response.getExperience(),
-                    response.getPrice(),response.getApplicationDeadline(), response.getRecruitmentDetails(), response.getCategoryId());
+                    response.getPrice(),response.getApplicationDeadline(), response.getRecruitmentDetails(), response.getCategoryId(), response.getRanker(), response.getQuantity(), response.getWorkingForm(), response.getGender());;
             result.put("status", "success");
             result.put("message", "Job updated successfully");
             result.put("job", updatedJob);
@@ -243,12 +299,47 @@ public class JobController {
                     job.getTotalValidityPeriod(),
                     job.getActivationDate(),
                     employerResponse,
-                    job.getCategories().getId(),
                     job.getCreateAt(),
-                    job.getStatus()
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
             );
         }).collect(Collectors.toList());
         return ResponseEntity.ok(jobResponses);
+    }
+
+    @GetMapping("/{jobId}")
+    public ResponseEntity<JobResponse> getJobById(@PathVariable Long jobId) {
+        try {
+            Job job = jobService.getJobId(jobId);
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            JobResponse jobResponse = new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+            return new ResponseEntity<>(jobResponse, HttpStatus.OK);
+        } catch (JobAlreadyExistException e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

@@ -64,8 +64,10 @@ public class LoginEmployerController {
             @RequestParam("telephone") String telephone,
             @RequestParam("addressId") Long addressId,
             @RequestParam("companyName") String companyName,
+            @RequestParam("scale") String scale,
+            @RequestParam("fieldActivity") String fieldActivity,
             @RequestParam("avatar") MultipartFile avatar) throws SQLException, IOException {
-        Admin savedAdmin = employerService.registerEmployer(email, password, firstName, lastName, birthDate, gender, telephone, avatar, companyName, addressId);
+        Admin savedAdmin = employerService.registerEmployer(email, password, firstName, lastName, birthDate, gender, telephone, avatar, companyName, addressId, scale, fieldActivity);
         EmployerResponse response = new EmployerResponse(
                 savedAdmin.getId(),
                 savedAdmin.getEmail(),
@@ -76,6 +78,8 @@ public class LoginEmployerController {
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
                 savedAdmin.getCompanyName(),
+                savedAdmin.getScale(),
+                savedAdmin.getFieldActivity(),
                 savedAdmin.getAddress().getId()
         );
         return ResponseEntity.ok(response);

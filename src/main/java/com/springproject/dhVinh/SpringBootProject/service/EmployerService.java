@@ -36,7 +36,7 @@ public class EmployerService implements IEmployerService {
     private final AddressRepository addressRepository;
 
     @Override
-    public Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate,  String gender, String telephone, MultipartFile avatar, String companyName, Long addressId)  throws SQLException, IOException {
+    public Admin registerEmployer(String email, String password, String firstName, String lastName, Date birthDate,  String gender, String telephone, MultipartFile avatar, String companyName, Long addressId, String scale, String fieldActivity)  throws SQLException, IOException {
         Admin admin = new Admin();
         if (adminRepository.existsByEmail(email)) {
             throw new AdminAlreadyExistsException(email + " already exists");
@@ -66,6 +66,7 @@ public class EmployerService implements IEmployerService {
         admin.setRegistrationDate(LocalDate.now());
         admin.setStatus(true);
         admin.setCompanyName(companyName);
+        admin.setScale(scale);
         Role adminRole = roleRepository.findByName("ROLE_EMPLOYER").orElseThrow(() -> new RuntimeException("Role not found"));
         admin.getRoles().add(adminRole);
 
@@ -94,6 +95,15 @@ public class EmployerService implements IEmployerService {
     }
 
     @Override
+    public String getEmailByCompanyName(String companyName) {
+        Optional<Admin> admin = adminRepository.findByCompanyName(companyName);
+        if (admin != null) {
+            return admin.get().getEmail();
+        }
+        throw new RuntimeException("Employer with company name '" + companyName + "' not found.");
+    }
+
+    @Override
     public byte[] getAvatarByEmail(String email) throws SQLException {
         Optional<Admin> admin = adminRepository.findByEmail(email);
         if(admin.isEmpty()) {
@@ -107,7 +117,7 @@ public class EmployerService implements IEmployerService {
     }
 
     @Override
-    public Admin updateEmployer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, String companyName, Long addressId) throws SQLException, IOException {
+    public Admin updateEmployer(String email, String firstName, String lastName, Date birthDate, MultipartFile avatar, String gender, String telephone, String companyName, Long addressId, String scale, String fieldActivity) throws SQLException, IOException {
         Optional<Admin> optionalAdmin = adminRepository.findByEmail(email);
         if (optionalAdmin.isPresent()) {
             Admin admin = optionalAdmin.get();
@@ -132,7 +142,8 @@ public class EmployerService implements IEmployerService {
             admin.setRegistrationDate(LocalDate.now());
             admin.setStatus(true);
             admin.setCompanyName(companyName);
-
+            admin.setScale(scale);
+            admin.setFieldActivity(fieldActivity);
             return adminRepository.save(admin);
         } else {
             throw new AdminAlreadyExistsException("Employer with email " + email + " not found.");

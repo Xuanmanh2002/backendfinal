@@ -19,6 +19,9 @@ public class ApplicationDocumentsResponse {
     private LocalDate createAt;
     private CustomerResponse customerResponse;
     private Long jobId;
+    private String jobName;
+    private Long  employerId;
+    private String companyName;
 
     public ApplicationDocumentsResponse(Long id, String fullName, String email, String telephone, byte[] photoBytes, String letter, String status, LocalDate createAt, CustomerResponse customerResponse, Long jobId) {
         this.id = id;
@@ -40,5 +43,35 @@ public class ApplicationDocumentsResponse {
         this.telephone = telephone;
         this.letter = letter;
         this.jobId = jobId;
+    }
+
+    public ApplicationDocumentsResponse(
+            Long id,
+            String fullName,
+            String email,
+            String telephone,
+            byte[] photoBytes,
+            String letter,
+            String status,
+            LocalDate createAt,
+            CustomerResponse customerResponse,
+            Long jobId,
+            String jobName,
+            Long employerId,
+            String companyName
+    ) {
+        this.id = id;
+        this.fullName = fullName;
+        this.email = email;
+        this.telephone = telephone;
+        this.cv = photoBytes != null ? Base64.encodeBase64String(photoBytes) : null;
+        this.letter = letter;
+        this.status = status;
+        this.createAt = createAt;
+        this.customerResponse = customerResponse;
+        this.jobId = jobId;
+        this.jobName = jobName;
+        this.employerId = employerId;
+        this.companyName = companyName;
     }
 }

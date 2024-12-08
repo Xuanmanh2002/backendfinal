@@ -80,4 +80,17 @@ public class ServicePackController {
         }
     }
 
+    @GetMapping("/{servicePackId}")
+    public ResponseEntity<Object> findById(@PathVariable("servicePackId") Long servicePackId) {
+        try {
+            ServicePack servicePack = service.findById(servicePackId);
+            return new ResponseEntity<>(servicePack, HttpStatus.OK);
+        } catch (Exception e) {
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("error", "ServicePack not found with ID: " + servicePackId);
+            responseBody.put("status", HttpStatus.NOT_FOUND.value());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseBody);
+        }
+    }
+
 }

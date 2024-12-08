@@ -42,4 +42,14 @@ public class CustomerResponse {
         this.telephone = telephone;
         this.addressId = addressId;
     }
+
+    public CustomerResponse(String email, String firstName, String lastName, Date birthDate, String gender, String telephone, Long addressId) {
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.birthDate = birthDate;
+        this.gender = gender;
+        this.telephone = telephone;
+        this.addressId = addressId;
+    }
 }

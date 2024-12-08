@@ -19,6 +19,8 @@ public interface IApplicationDocumentsService {
 
     List<ApplicationDocuments> getAllJobByAdmin(Long adminId);
 
+    List<ApplicationDocuments> getAllJobByCustomer(Long adminId);
 
+    ApplicationDocuments updateStatus(Long applicationDocumentsId, String status);
 
 }

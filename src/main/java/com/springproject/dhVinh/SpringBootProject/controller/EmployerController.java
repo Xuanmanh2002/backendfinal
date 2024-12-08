@@ -45,22 +45,30 @@ public class EmployerController {
     }
 
     @GetMapping("/show-profile/{email}")
-    public ResponseEntity<?>getEmployerByEmail(@PathVariable("email") String email){
+    public ResponseEntity<EmployerResponse> getEmployerByEmail(@PathVariable("email") String email) throws SQLException {
+        Admin admin = employerService.getEmployer(email);
+        if (admin == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        byte[] photoBytes = employerService.getAvatarByEmail(email);
+        EmployerResponse employerResponse = getEmployerResponse(admin);
+
+        if (photoBytes != null && photoBytes.length > 0) {
+            String base64Photo = Base64.encodeBase64String(photoBytes);
+            employerResponse.setAvatar(base64Photo);
+        }
+
+        return ResponseEntity.ok(employerResponse);
+    }
+
+    @GetMapping("/email-by-company")
+    public ResponseEntity<String> getEmailByCompanyName(@RequestParam String companyName) {
         try {
-            Admin admin = employerService.getEmployer(email);
-            EmployerResponse response= getEmployerResponse(admin);
-
-            byte[] photoBytes = employerService.getAvatarByEmail(email);
-            if (photoBytes != null && photoBytes.length > 0) {
-                String base64Photo = Base64.encodeBase64String(photoBytes);
-                response.setAvatar(base64Photo);
-            }
-
-            return ResponseEntity.ok(response);
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving employer profile");
+            String email = employerService.getEmailByCompanyName(companyName);
+            return ResponseEntity.ok(email);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -82,6 +90,8 @@ public class EmployerController {
         employerResponse.setAddressId(admin.getAddress().getId());
         employerResponse.setCompanyName(admin.getCompanyName());
         employerResponse.setRank(admin.getRank());
+        employerResponse.setScale(admin.getScale());
+        employerResponse.setFieldActivity(admin.getFieldActivity());
         byte[] photoBytes = null;
         Blob photoBlob = admin.getAvatar();
         if (photoBlob != null) {
@@ -106,13 +116,16 @@ public class EmployerController {
             @RequestParam("telephone") String telephone,
             @RequestParam("addressId") Long addressId,
             @RequestParam("companyName") String companyName,
+            @RequestParam("scale") String scale,
+            @RequestParam("fieldActivity") String fieldActivity,
             @RequestParam(value = "avatar", required = false) MultipartFile avatar) throws SQLException, IOException {
         Date birthDate = null;
         if (birthDateMillis != null) {
             birthDate = new Date(birthDateMillis);
         }
-        Admin savedAdmin = employerService.updateEmployer(email, firstName, lastName, birthDate, avatar, gender, telephone,companyName, addressId);
+        Admin savedAdmin = employerService.updateEmployer(email, firstName, lastName, birthDate, avatar, gender, telephone,companyName, addressId, scale, fieldActivity);
         EmployerResponse response = new EmployerResponse(
+                savedAdmin.getId(),
                 savedAdmin.getEmail(),
                 savedAdmin.getFirstName(),
                 savedAdmin.getLastName(),
@@ -120,6 +133,8 @@ public class EmployerController {
                 savedAdmin.getGender(),
                 savedAdmin.getTelephone(),
                 savedAdmin.getCompanyName(),
+                savedAdmin.getScale(),
+                savedAdmin.getFieldActivity(),
                 savedAdmin.getAddress().getId()
         );
         return ResponseEntity.ok(response);

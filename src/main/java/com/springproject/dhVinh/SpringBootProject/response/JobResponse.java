@@ -19,26 +19,16 @@ public class JobResponse {
     private Long totalValidityPeriod;
     private LocalDate activationDate;
     private EmployerResponse employerResponse;
-    @JsonProperty("categoryId")
-    private Long categoryId;
     private LocalDate createAt;
     private Boolean status;
+    private String ranker;
+    private Long quantity;
+    private String workingForm;
+    private String gender;
+    @JsonProperty("categoryId")
+    private Long categoryId;
 
-    public JobResponse(Long id, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long totalValidityPeriod, LocalDate activationDate, Long categoryId, LocalDate createAt, Boolean status) {
-        this.id = id;
-        this.jobName = jobName;
-        this.experience = experience;
-        this.price = price;
-        this.applicationDeadline = applicationDeadline;
-        this.recruitmentDetails = recruitmentDetails;
-        this.totalValidityPeriod = totalValidityPeriod;
-        this.activationDate = activationDate;
-        this.categoryId = categoryId;
-        this.createAt = createAt;
-        this.status = status;
-    }
-
-    public JobResponse(Long id, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long totalValidityPeriod, LocalDate activationDate, EmployerResponse employerResponse, Long categoryId, LocalDate createAt, Boolean status) {
+    public JobResponse(Long id, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long totalValidityPeriod, LocalDate activationDate, EmployerResponse employerResponse, LocalDate createAt, Boolean status, String ranker, Long quantity, String workingForm, String gender, Long categoryId) {
         this.id = id;
         this.jobName = jobName;
         this.experience = experience;
@@ -48,21 +38,32 @@ public class JobResponse {
         this.totalValidityPeriod = totalValidityPeriod;
         this.activationDate = activationDate;
         this.employerResponse = employerResponse;
-        this.categoryId = categoryId;
         this.createAt = createAt;
         this.status = status;
+        this.ranker = ranker;
+        this.quantity = quantity;
+        this.workingForm = workingForm;
+        this.gender = gender;
+        this.categoryId = categoryId;
     }
 
-
-    public JobResponse(Long id, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, EmployerResponse employerResponse, Long categoryId, LocalDate createAt) {
+    public JobResponse(Long id, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long totalValidityPeriod, LocalDate activationDate, LocalDate createAt, Boolean status, String ranker, Long quantity, String workingForm, String gender, Long categoryId) {
         this.id = id;
         this.jobName = jobName;
         this.experience = experience;
         this.price = price;
         this.applicationDeadline = applicationDeadline;
         this.recruitmentDetails = recruitmentDetails;
-        this.employerResponse = employerResponse;
-        this.categoryId = categoryId;
+        this.totalValidityPeriod = totalValidityPeriod;
+        this.activationDate = activationDate;
         this.createAt = createAt;
+        this.status = status;
+        this.ranker = ranker;
+        this.quantity = quantity;
+        this.workingForm = workingForm;
+        this.gender = gender;
+        this.categoryId = categoryId;
     }
+
+
 }

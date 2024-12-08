@@ -36,6 +36,14 @@ public class Job {
     private LocalDate activationDate;
     @Column(name = "status")
     private Boolean status;
+    @Column(name = "ranker")
+    private String ranker;
+    @Column(name = "quantity")
+    private Long quantity;
+    @Column(name = "workingForm")
+    private String workingForm;
+    @Column(name = "gender")
+    private String gender;
     @Column(name = "createAt")
     private LocalDate createAt;
 

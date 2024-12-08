@@ -44,16 +44,13 @@ public class JobService implements IJobService {
     }
 
     @Override
-    public Job addJob(Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId) {
+    public Job addJob(Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId, String ranker, Long quantity, String workForm, String gender) {
         if (admin == null) {
-            throw new RuntimeException("Admin not found");
+            throw new IllegalArgumentException("Admin cannot be null.");
         }
 
-        Optional<Category> optionalCategory = categoryRepository.findById(categoryId);
-        if (!optionalCategory.isPresent()) {
-            throw new RuntimeException("Category not found");
-        }
-        Category category = optionalCategory.get();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category with ID " + categoryId + " not found"));
 
         Job job = new Job();
         job.setAdmins(admin);
@@ -64,21 +61,24 @@ public class JobService implements IJobService {
         job.setRecruitmentDetails(recruitmentDetails);
         job.setCreateAt(LocalDate.now());
         job.setCategories(category);
+        job.setRanker(ranker);
+        job.setQuantity(quantity);
+        job.setWorkingForm(workForm);
+        job.setGender(gender);
 
         boolean hasOrder = orderRepository.existsByAdminId(admin.getId());
-        if (!hasOrder) {
+        if (hasOrder) {
+            Order order = orderRepository.findByAdminId(admin.getId())
+                    .orElseThrow(() -> new RuntimeException("Order not found for admin ID " + admin.getId()));
+            job.setStatus(true);
+            job.setActivationDate(LocalDate.now());
+            job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+        } else {
             job.setStatus(false);
             job.setActivationDate(null);
             job.setTotalValidityPeriod(null);
-        } else {
-            Optional<Order> adminOrder = orderRepository.findByAdminId(admin.getId());
-            if (adminOrder.isPresent()) {
-                Order order = adminOrder.get();
-                job.setStatus(true);
-                job.setActivationDate(LocalDate.now());
-                job.setTotalValidityPeriod(order.getTotalValidityPeriod());
-            }
         }
+
         return jobRepository.save(job);
     }
 
@@ -98,7 +98,7 @@ public class JobService implements IJobService {
     }
 
     @Override
-    public Job updateJob(Long jobId, Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId) {
+    public Job updateJob(Long jobId, Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId, String ranker, Long quantity, String workForm, String gender) {
         if (admin == null) {
             throw new AdminAlreadyExistsException("Admin not found");
         }
@@ -117,8 +117,12 @@ public class JobService implements IJobService {
         job.setApplicationDeadline(applicationDeadline);
         job.setRecruitmentDetails(recruitmentDetails);
         job.setStatus(false);
-        job.setCreateAt(LocalDate.now());
         job.setCategories(optionalCategory.get());
+        job.setRanker(ranker);
+        job.setQuantity(quantity);
+        job.setWorkingForm(workForm);
+        job.setGender(gender);
+        job.setCreateAt(LocalDate.now());
         return jobRepository.save(job);
     }
 
@@ -133,5 +137,16 @@ public class JobService implements IJobService {
     public List<Job> getAllJobsWithEmployerGold() {
         List<String> rank = Arrays.asList("silver", "gold", "diamond");
         return jobRepository.findJobsByAdminRank(rank);
+    }
+
+    @Override
+    public List<Job> getAllJobStatusTrueByEmployer(Long adminId) {
+        return jobRepository.findByAdminIdAndStatusTrue(adminId);
+    }
+
+    @Override
+    public Job getJobId(Long jobId) {
+        return jobRepository.findById(jobId)
+                .orElseThrow(() -> new JobAlreadyExistException("Job with id " + jobId + " not found"));
     }
 }

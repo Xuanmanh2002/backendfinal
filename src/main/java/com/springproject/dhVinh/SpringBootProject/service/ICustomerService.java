@@ -14,9 +14,11 @@ public interface ICustomerService {
 
     List<Admin> getCustomer();
 
-    void deleteCustomer(String email);
+    void deleteCustomer(Long id);
 
-    Admin getCustomer(String email);
+    Admin getCustomer(Long id);
+
+    Admin getCustomerByEmail(String email);
 
     byte[] getAvatarByEmail(String email) throws SQLException;
 

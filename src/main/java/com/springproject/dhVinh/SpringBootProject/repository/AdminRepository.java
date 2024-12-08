@@ -16,6 +16,8 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     Optional<Admin> findByEmail(String email);
 
+    Optional<Admin> findByCompanyName(String companyName);
+
     @Query("SELECT a FROM Admin a JOIN a.roles r WHERE r.name = 'ROLE_ADMIN'")
     List<Admin> findByRoleAdmin();
 
