@@ -22,14 +22,13 @@ public class ServicePackService implements IServicePackService {
     }
 
     @Override
-    public ServicePack createServicePack(String serviceName, Double price, Long quantity, Long validityPeriod, String description) {
+    public ServicePack createServicePack(String serviceName, Double price,  Long validityPeriod, String description) {
         if(servicePackRepository.existsByServiceName(serviceName)) {
             throw new ServicePackAlreadyExistsException(serviceName + "serviceName already exists");
         }
         ServicePack servicePack = new ServicePack();
         servicePack.setServiceName(serviceName);
         servicePack.setPrice(price);
-        servicePack.setQuantity(quantity);
         servicePack.setDescription(description);
         servicePack.setValidityPeriod(validityPeriod);
         LocalDate createDate = LocalDate.now();
@@ -48,13 +47,12 @@ public class ServicePackService implements IServicePackService {
     }
 
     @Override
-    public ServicePack updateServicePack(Long servicePackId, String serviceName, Double price, Long quantity, Long validityPeriod, String description) {
+    public ServicePack updateServicePack(Long servicePackId, String serviceName, Double price,  Long validityPeriod, String description) {
         Optional<ServicePack> optionalServicePack = servicePackRepository.findById(servicePackId);
         if(optionalServicePack.isPresent()) {
             ServicePack servicePack = optionalServicePack.get();
             servicePack.setServiceName(serviceName);
             servicePack.setPrice(price);
-            servicePack.setQuantity(quantity);
             servicePack.setValidityPeriod(validityPeriod);
             servicePack.setDescription(description);
             return servicePackRepository.save(servicePack);

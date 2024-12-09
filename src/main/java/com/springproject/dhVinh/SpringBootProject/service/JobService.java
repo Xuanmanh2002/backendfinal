@@ -2,10 +2,7 @@ package com.springproject.dhVinh.SpringBootProject.service;
 
 import com.springproject.dhVinh.SpringBootProject.exception.AdminAlreadyExistsException;
 import com.springproject.dhVinh.SpringBootProject.exception.JobAlreadyExistException;
-import com.springproject.dhVinh.SpringBootProject.model.Admin;
-import com.springproject.dhVinh.SpringBootProject.model.Category;
-import com.springproject.dhVinh.SpringBootProject.model.Job;
-import com.springproject.dhVinh.SpringBootProject.model.Order;
+import com.springproject.dhVinh.SpringBootProject.model.*;
 import com.springproject.dhVinh.SpringBootProject.repository.AdminRepository;
 import com.springproject.dhVinh.SpringBootProject.repository.CategoryRepository;
 import com.springproject.dhVinh.SpringBootProject.repository.JobRepository;
@@ -44,7 +41,9 @@ public class JobService implements IJobService {
     }
 
     @Override
-    public Job addJob(Admin admin, String jobName, String experience, String price, Date applicationDeadline, String recruitmentDetails, Long categoryId, String ranker, Long quantity, String workForm, String gender) {
+    public Job addJob(Admin admin, String jobName, String experience, String price, Date applicationDeadline,
+                      String recruitmentDetails, Long categoryId, String ranker, Long quantity,
+                      String workForm, String gender) {
         if (admin == null) {
             throw new IllegalArgumentException("Admin cannot be null.");
         }
@@ -69,9 +68,18 @@ public class JobService implements IJobService {
         if (hasOrder) {
             Order order = orderRepository.findByAdminId(admin.getId())
                     .orElseThrow(() -> new RuntimeException("Order not found for admin ID " + admin.getId()));
-            job.setStatus(true);
-            job.setActivationDate(LocalDate.now());
-            job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+
+            boolean allServicesActive = order.getOrderDetails().stream()
+                    .allMatch(OrderDetail::getStatus);
+            if (allServicesActive) {
+                job.setStatus(true);
+                job.setActivationDate(LocalDate.now());
+                job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+            } else {
+                job.setStatus(false);
+                job.setActivationDate(null);
+                job.setTotalValidityPeriod(null);
+            }
         } else {
             job.setStatus(false);
             job.setActivationDate(null);
@@ -81,9 +89,9 @@ public class JobService implements IJobService {
         if (Boolean.TRUE.equals(job.getStatus()) && applicationDeadline.toLocalDate().isBefore(today)) {
             job.setStatus(false);
         }
-
         return jobRepository.save(job);
     }
+
 
     @Override
     public List<Job> getAllJobs() {

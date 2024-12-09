@@ -64,15 +64,14 @@ public class OrderService implements IOrderService{
                 orderDetail.setPrice(servicePack.getPrice());
                 orderDetail.setQuantity(cartItem.getQuantity());
                 orderDetail.setTotalAmounts(cartItem.getTotalPrice());
+                orderDetail.setActivationDate(LocalDate.now());
+                orderDetail.setStatus(true);
                 orderDetail.setTotalValidityPeriod(cartItem.getTotalValidityPeriod());
                 orderDetails.add(orderDetail);
-                servicePack.setQuantity(servicePack.getQuantity() - orderDetail.getQuantity());
             } else {
                 orderDetail.setQuantity(orderDetail.getQuantity() + cartItem.getQuantity());
                 orderDetail.setTotalAmounts(orderDetail.getTotalAmounts() + cartItem.getTotalPrice());
-                servicePack.setQuantity(servicePack.getQuantity() - cartItem.getQuantity());
             }
-            servicePackRepository.save(servicePack);
         }
         double totalAmounts = cart.getTotalAmounts() + (cart.getTotalAmounts() * 0.08);
         order.setTotalAmounts(totalAmounts);
@@ -89,24 +88,31 @@ public class OrderService implements IOrderService{
             }
             employerRepository.save(admin);
         }
-        List<Job> jobs = jobRepository.findByAdmins(admin);
-        for (Job job : jobs) {
-            job.setTotalValidityPeriod(order.getTotalValidityPeriod());
-            job.setActivationDate(LocalDate.now());
-            job.setStatus(true);
-            jobRepository.save(job);
+        if ("Thanh toán thành công".equals(order.getOrderStatus())) {
+            List<Job> jobs = jobRepository.findByAdmins(admin);
+            for (Job job : jobs) {
+                if (Boolean.TRUE.equals(job.getStatus())) {
+                    job.setTotalValidityPeriod(job.getTotalValidityPeriod() + order.getTotalValidityPeriod());
+                } else {
+                    job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+                    job.setActivationDate(LocalDate.now());
+                    job.setStatus(true);
+                }
+                jobRepository.save(job);
+            }
         }
 
         orderRepository.save(order);
         cartItemRepository.deleteAll(cart.getCartItems());
         cartRepository.delete(cart);
-        Notification notification = new Notification();
-        notification.setTitle(admin.getFirstName() + " đã mua hàng");
-        notification.setStatus(false);
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setAdmins(admin);
-        notificationRepository.save(notification);
-
+        if ("Thanh toán thành công".equals(order.getOrderStatus())) {
+            Notification notification = new Notification();
+            notification.setTitle(admin.getFirstName() + " đã mua hàng");
+            notification.setStatus(false);
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setAdmins(admin);
+            notificationRepository.save(notification);
+        }
         return order;
     }
 
@@ -142,7 +148,6 @@ public class OrderService implements IOrderService{
                 orderDetail.setQuantity(orderDetail.getQuantity() + cartItem.getQuantity());
                 orderDetail.setTotalAmounts(orderDetail.getTotalAmounts() + cartItem.getTotalPrice());
             }
-            servicePack.setQuantity(servicePack.getQuantity() - cartItem.getQuantity());
             servicePackRepository.save(servicePack);
         }
 

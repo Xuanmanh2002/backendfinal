@@ -25,8 +25,6 @@ public class ServicePack {
     private String serviceName;
     @Column(name = "price")
     private Double price;
-    @Column(name = "quantity")
-    private Long quantity;
     @Column(name = "validityPeriod")
     private Long validityPeriod;
     @Column(name = "description")

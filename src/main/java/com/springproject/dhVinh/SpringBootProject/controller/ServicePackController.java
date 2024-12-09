@@ -35,7 +35,7 @@ public class ServicePackController {
         Map<String, Object> responseBody = new HashMap<>();
         try {
             ServicePack servicePack = new ServicePack();
-            service.createServicePack(response.getServiceName(), response.getPrice(), response.getQuantity(), response.getValidityPeriod(), response.getDescription());
+            service.createServicePack(response.getServiceName(), response.getPrice(), response.getValidityPeriod(), response.getDescription());
 
             responseBody.put("message", "New service created successfully");
             responseBody.put("status", HttpStatus.OK.value());
@@ -68,7 +68,7 @@ public class ServicePackController {
             Map<String, Object> result = new HashMap<>();
             try{
             ServicePack servicePack = service.updateServicePack(servicePackId, response.getServiceName(),
-                    response.getPrice(),response.getQuantity(),response.getValidityPeriod(),response.getDescription());
+                    response.getPrice(),response.getValidityPeriod(),response.getDescription());
             result.put("status", "success");
             result.put("message", "Service update successfully");
             result.put("service", servicePack);

@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,6 +26,10 @@ public class OrderDetail {
     private Double totalAmounts;
     @Column(name = "totalValidityPeriod")
     private Long totalValidityPeriod;
+    @Column(name = "activationDate")
+    private LocalDate activationDate;
+    @Column(name = "status")
+    private Boolean status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference

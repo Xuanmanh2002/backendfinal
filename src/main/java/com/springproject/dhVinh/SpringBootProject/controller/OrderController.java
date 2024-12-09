@@ -145,6 +145,8 @@ public class OrderController {
                         orderDetail.getPrice(),
                         orderDetail.getTotalAmounts(),
                         orderDetail.getTotalValidityPeriod(),
+                        orderDetail.getActivationDate(),
+                        orderDetail.getStatus(),
                         orderDetail.getServices().getId(),
                         orderDetail.getOrders().getId()
                 ))
@@ -176,6 +178,8 @@ public class OrderController {
                             orderDetail.getPrice(),
                             orderDetail.getTotalAmounts(),
                             orderDetail.getTotalValidityPeriod(),
+                            orderDetail.getActivationDate(),
+                            orderDetail.getStatus(),
                             orderDetail.getServices().getId(),
                             orderDetail.getOrders().getId()
                     ))
