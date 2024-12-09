@@ -6,6 +6,7 @@ import com.springproject.dhVinh.SpringBootProject.model.Order;
 import com.springproject.dhVinh.SpringBootProject.model.OrderDetail;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IOrderService {
 
@@ -28,4 +29,8 @@ public interface IOrderService {
     List<OrderDetail> getAllOrderDetailByAdmin(Long adminId);
 
     void deleteOrderDetailToOrder(Long serviceId, Admin admin);
+
+    Order updateOrderStatus(Long orderId,String orderStatus);
+
+    Map<Integer, Double> calculateTotalAmountsByMonth();
 }

@@ -23,6 +23,7 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -97,6 +98,7 @@ public class OrderController {
             return new OrderResponse(
                 order.getId(),
                 order.getOrderDate(),
+                order.getOrderStatus(),
                 order.getTotalAmounts(),
                 order.getTotalValidityPeriod(),
                 employerResponse
@@ -206,6 +208,7 @@ public class OrderController {
         OrderResponse orderResponse= new OrderResponse(
                 order.getId(),
                 order.getOrderDate(),
+                order.getOrderStatus(),
                 order.getTotalAmounts(),
                 order.getTotalValidityPeriod(),
                 employerResponse
@@ -220,6 +223,22 @@ public class OrderController {
             Admin admin = employerService.getEmployer(email);
             orderService.deleteOrderDetailToOrder(serviceId, admin);
             return ResponseEntity.ok("Chi tiết đơn hàng đã được xóa thành công.");
+    }
+
+    @PutMapping("/update-status/{orderId}")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestParam String orderStatus) {
+        try {
+            // Logic to update order status
+            Order updatedOrder = orderService.updateOrderStatus(orderId, orderStatus);
+            return ResponseEntity.ok(updatedOrder);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update order status");
+        }
+    }
+
+    @GetMapping("/total-amounts-by-month")
+    public Map<Integer, Double> getTotalAmountsByMonth() {
+        return orderService.calculateTotalAmountsByMonth();
     }
 
 }

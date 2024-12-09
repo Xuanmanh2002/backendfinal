@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +47,7 @@ public class OrderService implements IOrderService{
             order.setOrderDate(LocalDate.now());
             order.setTotalAmounts(cart.getTotalAmounts() + (cart.getTotalAmounts() * 0.08));
             order.setTotalValidityPeriod(cart.getTotalValidityPeriod());
-            order.setOrderStatus("Chuyển khoản thành công");
+            order.setOrderStatus("Chờ thành công");
             order.setOrderDetails(new ArrayList<>());
         }
         List<OrderDetail> orderDetails = order.getOrderDetails() != null ? order.getOrderDetails() : new ArrayList<>();
@@ -76,20 +74,21 @@ public class OrderService implements IOrderService{
             }
             servicePackRepository.save(servicePack);
         }
-
         double totalAmounts = cart.getTotalAmounts() + (cart.getTotalAmounts() * 0.08);
         order.setTotalAmounts(totalAmounts);
         order.setOrderDetails(orderDetails);
-        if (totalAmounts >= 20000000) {
-            admin.setRank("diamond");
-        } else if (totalAmounts >= 10000000) {
-            admin.setRank("gold");
-        } else if (totalAmounts >= 2000000) {
-            admin.setRank("silver");
-        } else {
-            admin.setRank("default");
+        if ("Thanh toán thành công".equals(order.getOrderStatus())) {
+            if (totalAmounts >= 20000000) {
+                admin.setRank("diamond");
+            } else if (totalAmounts >= 10000000) {
+                admin.setRank("gold");
+            } else if (totalAmounts >= 2000000) {
+                admin.setRank("silver");
+            } else {
+                admin.setRank("default");
+            }
+            employerRepository.save(admin);
         }
-        employerRepository.save(admin);
         List<Job> jobs = jobRepository.findByAdmins(admin);
         for (Job job : jobs) {
             job.setTotalValidityPeriod(order.getTotalValidityPeriod());
@@ -101,13 +100,13 @@ public class OrderService implements IOrderService{
         orderRepository.save(order);
         cartItemRepository.deleteAll(cart.getCartItems());
         cartRepository.delete(cart);
-
         Notification notification = new Notification();
         notification.setTitle(admin.getFirstName() + " đã mua hàng");
         notification.setStatus(false);
         notification.setCreatedAt(LocalDateTime.now());
         notification.setAdmins(admin);
         notificationRepository.save(notification);
+
         return order;
     }
 
@@ -225,4 +224,33 @@ public class OrderService implements IOrderService{
             orderRepository.save(order);
         }
     }
+
+    @Override
+    public Order updateOrderStatus(Long orderId, String orderStatus) {
+        if (orderId == null || orderStatus == null || orderStatus.trim().isEmpty()) {
+            throw new IllegalArgumentException("Order ID hoặc trạng thái không hợp lệ.");
+        }
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order không tồn tại với ID: " + orderId));
+        order.setOrderStatus(orderStatus);
+        orderRepository.save(order);
+        return order;
+    }
+
+    @Override
+    public Map<Integer, Double> calculateTotalAmountsByMonth() {
+        Map<Integer, Double> totalAmountsByMonth = new HashMap<>();
+        for (int i = 1; i <= 12; i++) {
+            totalAmountsByMonth.put(i, 0.0);
+        }
+        List<Order> orders = orderRepository.findAll();
+        for (Order order : orders) {
+            int month = order.getOrderDate().getMonthValue();
+            double totalAmount = order.getTotalAmounts();
+            totalAmountsByMonth.put(month, totalAmountsByMonth.get(month) + totalAmount);
+        }
+        return totalAmountsByMonth;
+    }
+
+
 }

@@ -65,7 +65,6 @@ public class JobService implements IJobService {
         job.setQuantity(quantity);
         job.setWorkingForm(workForm);
         job.setGender(gender);
-
         boolean hasOrder = orderRepository.existsByAdminId(admin.getId());
         if (hasOrder) {
             Order order = orderRepository.findByAdminId(admin.getId())
@@ -77,6 +76,10 @@ public class JobService implements IJobService {
             job.setStatus(false);
             job.setActivationDate(null);
             job.setTotalValidityPeriod(null);
+        }
+        LocalDate today = LocalDate.now();
+        if (Boolean.TRUE.equals(job.getStatus()) && applicationDeadline.toLocalDate().isBefore(today)) {
+            job.setStatus(false);
         }
 
         return jobRepository.save(job);
@@ -116,7 +119,6 @@ public class JobService implements IJobService {
         job.setPrice(price);
         job.setApplicationDeadline(applicationDeadline);
         job.setRecruitmentDetails(recruitmentDetails);
-        job.setStatus(false);
         job.setCategories(optionalCategory.get());
         job.setRanker(ranker);
         job.setQuantity(quantity);

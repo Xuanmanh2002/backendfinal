@@ -100,11 +100,11 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
             ApplicationDocuments applicationDocuments = applicationDocumentsOptional.get();
             applicationDocuments.setStatus(status);
             applicationDocumentsRepository.save(applicationDocuments);
-
-            // Kiểm tra trạng thái và gửi email thông báo
+            String jobName = applicationDocuments.getJobs().getJobName();
+            String companyName = applicationDocuments.getJobs().getAdmins().getCompanyName();
             if ("Chấp nhận".equalsIgnoreCase(status) || "Từ chối".equalsIgnoreCase(status)) {
                 try {
-                    sendEmail(applicationDocuments.getEmail(), status);
+                    sendEmail(applicationDocuments.getEmail(), status, jobName, companyName);
                 } catch (Exception e) {
                     System.err.println("Không thể gửi email: " + e.getMessage());
                 }
@@ -112,11 +112,11 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
 
             return applicationDocuments;
         } else {
-            throw new ApplicationAlreadyExistsException("Application Documents with ID " + applicationDocumentsId + " not found");
+            throw new ApplicationAlreadyExistsException("Application Documents với ID " + applicationDocumentsId + " không tồn tại");
         }
     }
 
-    private void sendEmail(String toEmail, String status) {
+    private void sendEmail(String toEmail, String status, String jobName, String companyName) {
         if (mailSender == null) {
             throw new IllegalStateException("MailSender chưa được cấu hình.");
         }
@@ -127,14 +127,17 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
         message.setFrom("nguyenxuanmanh2k2@gmail.com");
         message.setTo(toEmail);
         message.setSubject("Thông báo về hồ sơ xin việc");
-        String messageText = "";
+
+        String messageText;
         if ("Chấp nhận".equalsIgnoreCase(status)) {
-            messageText = "Hồ sơ xin việc của bạn đã được chấp nhận.\n\nTrân trọng,\nQuản lý tuyển dụng.";
+            messageText = "Hồ sơ xin việc của bạn đã được chấp nhận, hẹn bạn sau 7 ngày nữa đến phỏng vấn vị trí "
+                    + jobName + ".\n\nTrân trọng,\n" + companyName + ".";
         } else if ("Từ chối".equalsIgnoreCase(status)) {
-            messageText = "Hồ sơ xin việc của bạn đã bị từ chối.\n\nTrân trọng,\nQuản lý tuyển dụng.";
+            messageText = "Hồ sơ xin việc của bạn đã bị từ chối.\n\nTrân trọng,\n" + companyName + ".";
         } else {
-            messageText = "Trạng thái hồ sơ của bạn không xác định.\n\nTrân trọng,\nQuản lý tuyển dụng.";
+            messageText = "Trạng thái hồ sơ của bạn không xác định.\n\nTrân trọng,\n" + companyName + ".";
         }
+
         message.setText(messageText);
         try {
             mailSender.send(message);

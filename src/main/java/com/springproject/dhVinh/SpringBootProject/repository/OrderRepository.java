@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,7 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.admins = :admin")
     Order findByAdmin(@Param("admin") Admin admin);
 
-    @Query(value = "SELECT COALESCE(SUM(o.totalAmounts), 0) FROM Order o")
+    @Query(value = "SELECT COALESCE(SUM(o.totalAmounts), 0) FROM Order o WHERE o.orderStatus = 'Thanh toán thành công' ")
     long countTotalAmounts();
 
     @Query("SELECT CASE WHEN COUNT(o) > 0 THEN true ELSE false END FROM Order o WHERE o.admins.id = :adminId")
@@ -22,4 +24,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT o FROM Order o WHERE o.admins.id = :adminId")
     Optional<Order> findByAdminId(@Param("adminId") Long adminId);
+
+    @Query("SELECT o FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate")
+    List<Order> findOrdersWithinDateRange(LocalDate startDate, LocalDate endDate);
 }

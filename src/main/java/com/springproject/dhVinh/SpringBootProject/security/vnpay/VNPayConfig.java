@@ -57,7 +57,7 @@ public class VNPayConfig {
                 sb.append(fieldName).append("=").append(fieldValue).append("&");
             }
         }
-        sb.deleteCharAt(sb.length() - 1); // Xóa ký tự `&` cuối cùng
+        sb.deleteCharAt(sb.length() - 1);
         return hmacSHA512(secretKey, sb.toString());
     }
 

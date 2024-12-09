@@ -15,9 +15,10 @@ public class OrderResponse {
     private Long totalValidityPeriod;
     private EmployerResponse employerResponse;
 
-    public OrderResponse(Long id, LocalDate orderDate, Double totalAmounts, Long totalValidityPeriod, EmployerResponse employerResponse) {
+    public OrderResponse(Long id, LocalDate orderDate, String orderStatus, Double totalAmounts, Long totalValidityPeriod, EmployerResponse employerResponse) {
         this.id = id;
         this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
         this.totalAmounts = totalAmounts;
         this.totalValidityPeriod = totalValidityPeriod;
         this.employerResponse = employerResponse;
