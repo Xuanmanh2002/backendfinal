@@ -33,8 +33,6 @@ public class ServicePack {
     private String description;
     @Column(name = "createAt")
     private LocalDate createAt;
-    @Column (name = "status")
-    private Boolean status;
 
     @OneToMany(mappedBy = "services", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference

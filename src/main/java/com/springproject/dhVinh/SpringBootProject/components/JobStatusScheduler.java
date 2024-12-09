@@ -21,6 +21,10 @@ public class JobStatusScheduler {
         LocalDate today = LocalDate.now();
 
         for (Job job : jobs) {
+            if (job.getApplicationDeadline() != null && job.getApplicationDeadline().toLocalDate().isBefore(today)) {
+                job.setStatus(false);
+            }
+
             if (job.getActivationDate() != null && job.getTotalValidityPeriod() != null) {
                 LocalDate expiryDate = job.getActivationDate().plusDays(job.getTotalValidityPeriod());
                 if (today.isAfter(expiryDate)) {
