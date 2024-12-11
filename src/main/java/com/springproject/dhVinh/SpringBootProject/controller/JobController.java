@@ -342,4 +342,9 @@ public class JobController {
         }
     }
 
+    @GetMapping("/jobs-find-by-employer")
+    public int getActiveJobs(@RequestParam Long adminId) {
+        return jobService.countJobsByAdmin(adminId);
+    }
+
 }

@@ -35,4 +35,5 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     @Query("SELECT a FROM Admin a WHERE a.rank IN ('silver', 'gold', 'diamond')")
     List<Admin> findByRank();
+
 }

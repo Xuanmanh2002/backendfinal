@@ -159,4 +159,9 @@ public class JobService implements IJobService {
         return jobRepository.findById(jobId)
                 .orElseThrow(() -> new JobAlreadyExistException("Job with id " + jobId + " not found"));
     }
+
+    @Override
+    public int countJobsByAdmin(Long adminId) {
+        return jobRepository.countActiveJobsByAdminId(adminId);
+    }
 }

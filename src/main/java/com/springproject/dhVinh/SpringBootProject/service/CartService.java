@@ -48,34 +48,35 @@ public class CartService implements ICartService{
         }
 
         ServicePack servicePack = optionalServicePack.get();
+
+        List<CartItem> items = cart.getCartItems() != null ? cart.getCartItems() : new ArrayList<>();
         Cart finalCart = cart;
-        List<CartItem> items = finalCart.getCartItems() != null ? finalCart.getCartItems() : new ArrayList<>();
-        CartItem cartItem = cart.getCartItems()
-                .stream()
+        CartItem cartItem = items.stream()
                 .filter(item -> item.getServices().getId().equals(serviceId))
                 .findFirst()
                 .orElseGet(() -> {
                     CartItem newCartItem = new CartItem();
                     newCartItem.setCarts(finalCart);
                     newCartItem.setServices(servicePack);
-                    newCartItem.setQuantity(quantity);
-                    newCartItem.setTotalPrice(quantity * servicePack.getPrice());
-                    newCartItem.setTotalValidityPeriod(servicePack.getValidityPeriod() * quantity);
+                    newCartItem.setQuantity(0L);
+                    newCartItem.setTotalPrice(0.0);
+                    newCartItem.setTotalValidityPeriod(0L);
                     cartItemRepository.save(newCartItem);
                     finalCart.getCartItems().add(newCartItem);
                     return newCartItem;
                 });
-        long newQuantity = cartItem.getQuantity();
-        cartItem.setQuantity(newQuantity);
-        cartItem.setTotalPrice(servicePack.getPrice() * newQuantity);
-        cartItemRepository.save(cartItem);
 
+        long newQuantity = cartItem.getQuantity() + quantity;
+        cartItem.setQuantity(newQuantity);
+        cartItem.setTotalPrice(newQuantity * servicePack.getPrice());
+        cartItem.setTotalValidityPeriod(servicePack.getValidityPeriod() * newQuantity);
+        cartItemRepository.save(cartItem);
         long totalQuantity = cartItemRepository.sumQuantityByCart(cart.getId());
         double totalPrice = cartItemRepository.sumTotalPriceByCart(cart.getId());
         long totalValidityPeriod = cartItemRepository.sumValidityPeriodByCart(cart.getId());
-        cart.setTotalValidityPeriod(totalValidityPeriod);
         cart.setTotalItems(totalQuantity);
         cart.setTotalAmounts(totalPrice);
+        cart.setTotalValidityPeriod(totalValidityPeriod);
 
         return cartRepository.save(cart);
     }

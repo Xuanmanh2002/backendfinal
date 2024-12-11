@@ -1,11 +1,13 @@
 package com.springproject.dhVinh.SpringBootProject.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Blob;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,6 +27,9 @@ public class Category {
     private String description;
     @Column(name = "creatAt")
     private LocalDate createAt;
+    @JsonIgnore
+    @Lob
+    private Blob images;
 
     @OneToMany(mappedBy = "categories", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference

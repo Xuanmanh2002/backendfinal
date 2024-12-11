@@ -27,4 +27,6 @@ public interface IJobService {
     List<Job> getAllJobStatusTrueByEmployer(Long adminId);
 
     Job getJobId(Long jobId);
+
+    int countJobsByAdmin(Long adminId);
 }

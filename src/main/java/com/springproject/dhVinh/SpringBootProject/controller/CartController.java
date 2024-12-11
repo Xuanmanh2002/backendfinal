@@ -130,11 +130,11 @@ public class CartController {
         Long totalItems = (long) cart.getCartItems().size();
         Double totalAmounts = cart.getCartItems()
                 .stream()
-                .mapToDouble(item -> item.getServices().getPrice())
+                .mapToDouble(item -> item.getServices().getPrice() * item.getQuantity())
                 .sum();
         Long totalValidityPeriod = cart.getCartItems()
                 .stream()
-                .mapToLong(item -> item.getServices().getValidityPeriod())
+                .mapToLong(item -> item.getServices().getValidityPeriod() * item.getQuantity())
                 .sum();
         CartResponse cartResponse = new CartResponse(
                 cart.getId(),
@@ -157,13 +157,14 @@ public class CartController {
         employerResponse.setTelephone(admin.getTelephone());
         employerResponse.setAddressId(admin.getAddress().getId());
         employerResponse.setCompanyName(admin.getCompanyName());
-
+        employerResponse.setRank(admin.getRank());
+        employerResponse.setScale(admin.getScale());
+        employerResponse.setFieldActivity(admin.getFieldActivity());
+        byte[] photoBytes = null;
         Blob photoBlob = admin.getAvatar();
         if (photoBlob != null) {
             try {
-                byte[] photoBytes = photoBlob.getBytes(1, (int) photoBlob.length());
-                String avatarBase64 = Base64.getEncoder().encodeToString(photoBytes);
-                employerResponse.setAvatar(avatarBase64);
+                photoBytes = photoBlob.getBytes(1, (int) photoBlob.length());
             } catch (SQLException e) {
                 throw new PhotoRetrievalException("Error retrieving photo");
             }

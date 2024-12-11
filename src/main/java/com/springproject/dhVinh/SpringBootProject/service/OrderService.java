@@ -47,7 +47,7 @@ public class OrderService implements IOrderService{
             order.setOrderDate(LocalDate.now());
             order.setTotalAmounts(cart.getTotalAmounts() + (cart.getTotalAmounts() * 0.08));
             order.setTotalValidityPeriod(cart.getTotalValidityPeriod());
-            order.setOrderStatus("Chờ thành công");
+            order.setOrderStatus("Chờ thanh toán");
             order.setOrderDetails(new ArrayList<>());
         }
         List<OrderDetail> orderDetails = order.getOrderDetails() != null ? order.getOrderDetails() : new ArrayList<>();
@@ -64,8 +64,10 @@ public class OrderService implements IOrderService{
                 orderDetail.setPrice(servicePack.getPrice());
                 orderDetail.setQuantity(cartItem.getQuantity());
                 orderDetail.setTotalAmounts(cartItem.getTotalPrice());
-                orderDetail.setActivationDate(LocalDate.now());
-                orderDetail.setStatus(true);
+                if ("Thanh toán thành công".equals(order.getOrderStatus())){
+                    orderDetail.setActivationDate(LocalDate.now());
+                    orderDetail.setStatus(true);
+                }
                 orderDetail.setTotalValidityPeriod(cartItem.getTotalValidityPeriod());
                 orderDetails.add(orderDetail);
             } else {
