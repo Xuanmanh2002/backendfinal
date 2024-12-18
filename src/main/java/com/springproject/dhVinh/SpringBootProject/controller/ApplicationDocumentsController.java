@@ -121,7 +121,7 @@ public class ApplicationDocumentsController {
     }
 
     @DeleteMapping("/delete/{applicationDocumentsId}")
-    public void deleteApplicationDocuments(@PathVariable("applicationDocumentsId") Long applicationDocumentsId){
+    public void deleteApplicationDocuments(@PathVariable("applicationDocumentsId") Long applicationDocumentsId) {
         adService.cancleAD(applicationDocumentsId);
     }
 
@@ -170,5 +170,42 @@ public class ApplicationDocumentsController {
             @RequestParam String status) {
         ApplicationDocuments updatedApplication = adService.updateStatus(id, status);
         return ResponseEntity.ok(updatedApplication);
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<List<ApplicationDocumentsResponse>> getApplicationDocumentsByStatus(
+            @RequestParam String status,
+            @RequestParam Long adminId) {
+        List<ApplicationDocuments> documents = adService.getApplicationDocumentsByStatus(status, adminId);
+        List<ApplicationDocumentsResponse> responses = documents.stream().map(applicationDocuments -> {
+            CustomerResponse customerResponse = getCustomerResponse(applicationDocuments.getAdmins());
+            byte[] photoBytes = null;
+            Blob photoBlob = applicationDocuments.getCv();
+            if (photoBlob != null) {
+                try {
+                    photoBytes = photoBlob.getBytes(1, (int) photoBlob.length());
+                } catch (SQLException e) {
+                    throw new PhotoRetrievalException("Error retrieving CV data");
+                }
+            }
+            Job job = applicationDocuments.getJobs();
+            Admin employer = job != null ? job.getAdmins() : null;
+            return new ApplicationDocumentsResponse(
+                    applicationDocuments.getId(),
+                    applicationDocuments.getFullName(),
+                    applicationDocuments.getEmail(),
+                    applicationDocuments.getTelephone(),
+                    photoBytes,
+                    applicationDocuments.getLetter(),
+                    applicationDocuments.getStatus(),
+                    applicationDocuments.getCreateAt(),
+                    customerResponse,
+                    job != null ? job.getId() : null,
+                    job != null ? job.getJobName() : null,
+                    employer != null ? employer.getId() : null,
+                    employer != null ? employer.getCompanyName() : null
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 }

@@ -343,8 +343,103 @@ public class JobController {
     }
 
     @GetMapping("/jobs-find-by-employer")
-    public int getActiveJobs(@RequestParam Long adminId) {
+    public int getCountJobsEmployer(@RequestParam Long adminId) {
         return jobService.countJobsByAdmin(adminId);
+    }
+
+    @GetMapping("/count-jobs-find-by-category")
+    public int getCountJobsCategory(@RequestParam Long categoryId) {
+        return jobService.countJobsByCategory(categoryId);
+    }
+
+    @GetMapping("/all-job-by-category")
+    public ResponseEntity<List<JobResponse>> getAllJobsByCategory(@RequestParam Long categoryId) {
+        List<Job> jobs = jobService.getAllJobByCategoryId(categoryId);
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+    @GetMapping("/all-job-by-addressId")
+    public ResponseEntity<List<JobResponse>> getAllJobsByAddressId(@RequestParam Long addressId) {
+        List<Job> jobs = jobService.getAllJobByAddressId(addressId);
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+    @GetMapping("/all-job-by-location-and-category")
+    public ResponseEntity<List<JobResponse>> getAllJobsByCategoryIDAndAddressId(@RequestParam Long categoryId, @RequestParam Long addressId) {
+        List<Job> jobs = jobService.getAllJobByCategoryIdAddressId(categoryId, addressId);
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
     }
 
 }

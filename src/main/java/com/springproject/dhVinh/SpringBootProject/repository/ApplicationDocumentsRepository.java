@@ -22,4 +22,10 @@ public interface ApplicationDocumentsRepository extends JpaRepository<Applicatio
             "JOIN FETCH j.admins e " +
             "WHERE ad.admins.id = :adminId")
     List<ApplicationDocuments> findByAdmin(Long adminId);
+
+    @Query("SELECT ad FROM ApplicationDocuments ad " +
+            "JOIN ad.jobs j " +
+            "JOIN j.admins a " +
+            "WHERE ad.status = :status AND a.id = :adminId")
+    List<ApplicationDocuments> findByStatusAndAdminId(@Param("status") String status, @Param("adminId") Long adminId);
 }

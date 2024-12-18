@@ -12,12 +12,13 @@ import java.util.List;
 @Repository
 public interface JobRepository extends JpaRepository<Job, Long> {
 
-   @Query("SELECT j FROM Job j WHERE j.admins.id = :adminId")
-   List<Job> findByAdminId(@Param("adminId") Long adminId);
+    @Query("SELECT j FROM Job j WHERE j.admins.id = :adminId")
+    List<Job> findByAdminId(@Param("adminId") Long adminId);
 
     List<Job> findByAdmins(Admin admin);
 
     List<Job> findByStatusTrue();
+
     List<Job> findByStatusFalse();
 
     @Query("SELECT j FROM Job j WHERE j.admins.rank IN (:rank)")
@@ -30,6 +31,26 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @Query("SELECT j FROM Job j WHERE j.admins.id = :adminId AND j.status = true")
     List<Job> findByAdminIdAndStatusTrue(@Param("adminId") Long adminId);
 
- @Query("SELECT COUNT(j) FROM Job j WHERE j.admins.id = :adminId AND j.status = true")
- int countActiveJobsByAdminId(@Param("adminId") Long adminId);
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.admins.id = :adminId AND j.status = true")
+    int countActiveJobsByAdminId(@Param("adminId") Long adminId);
+
+    @Query("SELECT COUNT(j) FROM Job j WHERE j.categories.id = :categoryId AND j.status = true")
+    int countActiveJobsByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT j FROM Job j WHERE j.categories.id = :categoryId AND j.status = true")
+    List<Job> findByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT j FROM Job j " +
+            "JOIN FETCH j.admins a " +
+            "JOIN FETCH a.address ad " +
+            "WHERE j.status = true AND ad.id = :addressId")
+    List<Job> findJobsByAddressId(@Param("addressId") Long addressId);
+
+    @Query("SELECT j FROM Job j " +
+            "JOIN FETCH j.categories c " +
+            "JOIN FETCH j.admins a " +
+            "JOIN FETCH a.address ad " +
+            "WHERE c.id = :categoryId AND ad.id = :addressId AND j.status = true")
+    List<Job> findByCategoryIdAndAddressId(@Param("categoryId") Long categoryId,
+                                           @Param("addressId") Long addressId);
 }

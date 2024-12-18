@@ -232,7 +232,6 @@ public class OrderController {
     @PutMapping("/update-status/{orderId}")
     public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestParam String orderStatus) {
         try {
-            // Logic to update order status
             Order updatedOrder = orderService.updateOrderStatus(orderId, orderStatus);
             return ResponseEntity.ok(updatedOrder);
         } catch (Exception e) {
@@ -244,5 +243,6 @@ public class OrderController {
     public Map<Integer, Double> getTotalAmountsByMonth() {
         return orderService.calculateTotalAmountsByMonth();
     }
+
 
 }

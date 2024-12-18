@@ -29,4 +29,12 @@ public interface IJobService {
     Job getJobId(Long jobId);
 
     int countJobsByAdmin(Long adminId);
+
+    int countJobsByCategory(Long categoryId);
+
+    List<Job> getAllJobByCategoryId(Long categoryId);
+
+    List<Job> getAllJobByAddressId(Long addressId);
+
+    List<Job> getAllJobByCategoryIdAddressId(Long categoryId, Long addressId);
 }

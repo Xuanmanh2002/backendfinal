@@ -55,7 +55,7 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
         applicationDocuments.setEmail(email);
         applicationDocuments.setTelephone(telephone);
         applicationDocuments.setLetter(letter);
-        applicationDocuments.setStatus("CV tiếp nhận");
+        applicationDocuments.setStatus("Received");
         applicationDocuments.setJobs(job);
         LocalDate createdDate = LocalDate.now();
         applicationDocuments.setCreateAt(createdDate);
@@ -102,7 +102,7 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
             applicationDocumentsRepository.save(applicationDocuments);
             String jobName = applicationDocuments.getJobs().getJobName();
             String companyName = applicationDocuments.getJobs().getAdmins().getCompanyName();
-            if ("Chấp nhận".equalsIgnoreCase(status) || "Từ chối".equalsIgnoreCase(status)) {
+            if ("Accept".equalsIgnoreCase(status) || "Reject".equalsIgnoreCase(status)) {
                 try {
                     sendEmail(applicationDocuments.getEmail(), status, jobName, companyName);
                 } catch (Exception e) {
@@ -114,6 +114,11 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
         } else {
             throw new ApplicationAlreadyExistsException("Application Documents với ID " + applicationDocumentsId + " không tồn tại");
         }
+    }
+
+    @Override
+    public List<ApplicationDocuments> getApplicationDocumentsByStatus(String status,  Long adminId) {
+        return applicationDocumentsRepository.findByStatusAndAdminId(status, adminId);
     }
 
     private void sendEmail(String toEmail, String status, String jobName, String companyName) {
@@ -129,10 +134,10 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
         message.setSubject("Thông báo về hồ sơ xin việc");
 
         String messageText;
-        if ("Chấp nhận".equalsIgnoreCase(status)) {
+        if ("Accept".equalsIgnoreCase(status)) {
             messageText = "Hồ sơ xin việc của bạn đã được chấp nhận, hẹn bạn sau 7 ngày nữa đến phỏng vấn vị trí "
                     + jobName + ".\n\nTrân trọng,\n" + companyName + ".";
-        } else if ("Từ chối".equalsIgnoreCase(status)) {
+        } else if ("Reject".equalsIgnoreCase(status)) {
             messageText = "Hồ sơ xin việc của bạn đã bị từ chối.\n\nTrân trọng,\n" + companyName + ".";
         } else {
             messageText = "Trạng thái hồ sơ của bạn không xác định.\n\nTrân trọng,\n" + companyName + ".";

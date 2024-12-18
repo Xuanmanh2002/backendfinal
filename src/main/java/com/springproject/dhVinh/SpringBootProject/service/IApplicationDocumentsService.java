@@ -23,4 +23,5 @@ public interface IApplicationDocumentsService {
 
     ApplicationDocuments updateStatus(Long applicationDocumentsId, String status);
 
+    List<ApplicationDocuments> getApplicationDocumentsByStatus(String status,  Long adminId);
 }

@@ -164,4 +164,24 @@ public class JobService implements IJobService {
     public int countJobsByAdmin(Long adminId) {
         return jobRepository.countActiveJobsByAdminId(adminId);
     }
+
+    @Override
+    public int countJobsByCategory(Long categoryId) {
+        return jobRepository.countActiveJobsByCategoryId(categoryId);
+    }
+
+    @Override
+    public List<Job> getAllJobByCategoryId(Long categoryId) {
+        return jobRepository.findByCategoryId(categoryId);
+    }
+
+    @Override
+    public List<Job> getAllJobByAddressId(Long addressId) {
+        return jobRepository.findJobsByAddressId(addressId);
+    }
+
+    @Override
+    public List<Job> getAllJobByCategoryIdAddressId(Long categoryId, Long addressId) {
+        return jobRepository.findByCategoryIdAndAddressId(categoryId, addressId);
+    }
 }
