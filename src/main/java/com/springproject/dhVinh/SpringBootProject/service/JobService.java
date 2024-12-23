@@ -184,4 +184,9 @@ public class JobService implements IJobService {
     public List<Job> getAllJobByCategoryIdAddressId(Long categoryId, Long addressId) {
         return jobRepository.findByCategoryIdAndAddressId(categoryId, addressId);
     }
+
+    @Override
+    public List<Job> searchJobsByKeyword(String keyword) {
+        return jobRepository.searchByKeyword(keyword);
+    }
 }

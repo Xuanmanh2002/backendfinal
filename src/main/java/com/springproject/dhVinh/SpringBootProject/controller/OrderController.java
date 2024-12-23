@@ -90,9 +90,6 @@ public class OrderController {
     @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         List<Order> orders = orderService.getAllOrder();
-        if (orders.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
         List<OrderResponse> orderResponses = orders.stream().map(order -> {
             EmployerResponse employerResponse = getEmployerResponse(order.getAdmins());
             return new OrderResponse(

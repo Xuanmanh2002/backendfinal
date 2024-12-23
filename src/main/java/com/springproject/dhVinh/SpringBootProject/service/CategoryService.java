@@ -78,4 +78,9 @@ public class CategoryService implements ICategoryService{
             throw new CategoryAlreadyExistsException("Category with ID " + categoryId + " not found.");
         }
     }
+
+    @Override
+    public List<Category> getCategoriesWithJobs() {
+        return categoryRepository.findCategoriesWithJobs();
+    }
 }

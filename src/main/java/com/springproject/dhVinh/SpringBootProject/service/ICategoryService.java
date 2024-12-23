@@ -19,4 +19,5 @@ public interface ICategoryService {
 
     Category updateCategory(Long categoryId, String categoryName, String description, MultipartFile images) throws SQLException, IOException;
 
+    List<Category> getCategoriesWithJobs();
 }

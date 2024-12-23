@@ -58,6 +58,33 @@ public class CategoryController {
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
+    @GetMapping("/with-jobs")
+    public ResponseEntity<List<CategoryResponse>> getCategoriesWithJobs()  throws SQLException{
+        List<Category> categories = categoryService.getCategoriesWithJobs();
+        List<CategoryResponse> responses = categories.stream()
+                .map(category -> {
+                    byte[] photoBytes = null;
+                    try {
+                        Blob photoBlob = category.getImages();
+                        if (photoBlob != null) {
+                            photoBytes = photoBlob.getBytes(1, (int) photoBlob.length());
+                        }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                    return new CategoryResponse(
+                            category.getId(),
+                            category.getCategoryName(),
+                            category.getDescription(),
+                            category.getCreateAt(),
+                            photoBytes
+                    );
+                })
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(responses, HttpStatus.OK);
+    }
+
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<CategoryResponse> createCategory(@RequestParam("categoryName") String categoryName,

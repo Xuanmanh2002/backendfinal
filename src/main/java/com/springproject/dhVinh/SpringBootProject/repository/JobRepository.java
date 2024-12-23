@@ -53,4 +53,8 @@ public interface JobRepository extends JpaRepository<Job, Long> {
             "WHERE c.id = :categoryId AND ad.id = :addressId AND j.status = true")
     List<Job> findByCategoryIdAndAddressId(@Param("categoryId") Long categoryId,
                                            @Param("addressId") Long addressId);
+
+    @Query("SELECT j FROM Job j WHERE LOWER(j.jobName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "OR LOWER(j.recruitmentDetails) LIKE LOWER(CONCAT('%', '%', :keyword , '%', '%'))")
+    List<Job> searchByKeyword(String keyword);
 }

@@ -37,4 +37,6 @@ public interface IJobService {
     List<Job> getAllJobByAddressId(Long addressId);
 
     List<Job> getAllJobByCategoryIdAddressId(Long categoryId, Long addressId);
+
+    List<Job> searchJobsByKeyword(String keyword);
 }

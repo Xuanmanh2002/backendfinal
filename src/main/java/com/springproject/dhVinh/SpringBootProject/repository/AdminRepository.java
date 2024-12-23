@@ -1,6 +1,7 @@
 package com.springproject.dhVinh.SpringBootProject.repository;
 
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
+import com.springproject.dhVinh.SpringBootProject.model.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -36,4 +37,6 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
     @Query("SELECT a FROM Admin a WHERE a.rank IN ('silver', 'gold', 'diamond')")
     List<Admin> findByRank();
 
+    @Query("SELECT a FROM Admin a JOIN a.jobs j GROUP BY a HAVING COUNT(j) > 1")
+    List<Admin> adminWithJobs();
 }

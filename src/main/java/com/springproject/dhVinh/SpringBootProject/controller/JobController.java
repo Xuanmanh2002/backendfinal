@@ -237,7 +237,7 @@ public class JobController {
     }
 
     @DeleteMapping("/delete/{jobId}")
-    @PreAuthorize("hasRole('ROLE_EMPLOYER')")
+    @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public void deleteCategory(@PathVariable("jobId") Long jobId){
         jobService.cancelJob(jobId);
     }
@@ -415,6 +415,36 @@ public class JobController {
     @GetMapping("/all-job-by-location-and-category")
     public ResponseEntity<List<JobResponse>> getAllJobsByCategoryIDAndAddressId(@RequestParam Long categoryId, @RequestParam Long addressId) {
         List<Job> jobs = jobService.getAllJobByCategoryIdAddressId(categoryId, addressId);
+        if (jobs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<JobResponse>> searchJobs(@RequestParam String keyword) {
+        List<Job> jobs = jobService.searchJobsByKeyword(keyword);
         if (jobs.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }

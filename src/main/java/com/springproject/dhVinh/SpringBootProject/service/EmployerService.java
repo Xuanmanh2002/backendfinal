@@ -154,4 +154,9 @@ public class EmployerService implements IEmployerService {
     public List<Admin> findByRank() {
         return adminRepository.findByRank();
     }
+
+    @Override
+    public List<Admin> getEmployerWithJobs() {
+        return adminRepository.adminWithJobs();
+    }
 }

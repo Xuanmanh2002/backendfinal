@@ -2,7 +2,6 @@ package com.springproject.dhVinh.SpringBootProject.controller;
 
 import com.springproject.dhVinh.SpringBootProject.exception.PhotoRetrievalException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
-import com.springproject.dhVinh.SpringBootProject.response.AdminResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.service.IEmployerService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,6 +18,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/employer")
@@ -156,4 +155,19 @@ public class EmployerController {
         return ResponseEntity.ok(employerResponses);
     }
 
+    @GetMapping("/with-jobs")
+    public ResponseEntity<List<EmployerResponse>> getEmployerWithJobs()  throws SQLException{
+        List<Admin> admins = employerService.getEmployerWithJobs();
+        List<EmployerResponse> employerResponses = new ArrayList<>();
+        for (Admin admin : admins) {
+            byte[] photoBytes = employerService.getAvatarByEmail(admin.getEmail());
+            if (photoBytes != null && photoBytes.length > 0) {
+                String base64Photo = Base64.encodeBase64String(photoBytes);
+                EmployerResponse employerResponse = getEmployerResponse(admin);
+                employerResponse.setAvatar(base64Photo);
+                employerResponses.add(employerResponse);
+            }
+        }
+        return ResponseEntity.ok(employerResponses);
+    }
 }

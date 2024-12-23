@@ -21,25 +21,19 @@ public class JobStatusScheduler {
     @Scheduled(cron = "0 0 0 * * ?")
     public void updateStatuses() {
         LocalDate today = LocalDate.now();
-
-        // Cập nhật trạng thái cho Job
         List<Job> jobs = jobRepository.findAll();
         for (Job job : jobs) {
             boolean updated = false;
-
-            // Kiểm tra hạn ứng tuyển
             if (job.getApplicationDeadline() != null && job.getApplicationDeadline().toLocalDate().isBefore(today)) {
                 job.setStatus(false);
                 updated = true;
             }
-
-            // Kiểm tra thời gian hiệu lực
             if (job.getActivationDate() != null && job.getTotalValidityPeriod() != null) {
                 LocalDate expiryDate = job.getActivationDate().plusDays(job.getTotalValidityPeriod());
                 if (today.isAfter(expiryDate)) {
                     job.setStatus(false);
                     updated = true;
-                } else if (!updated) { // Chỉ bật lại trạng thái nếu chưa được đặt thành false
+                } else if (!updated) {
                     job.setStatus(true);
                 }
             }

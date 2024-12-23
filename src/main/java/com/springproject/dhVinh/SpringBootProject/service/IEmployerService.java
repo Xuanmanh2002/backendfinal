@@ -1,6 +1,7 @@
 package com.springproject.dhVinh.SpringBootProject.service;
 
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
+import com.springproject.dhVinh.SpringBootProject.model.Category;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -25,4 +26,6 @@ public interface IEmployerService {
                       String gender, String telephone, String companyName,  Long addressId, String scale, String fieldActivity) throws SQLException, IOException ;
 
     List<Admin> findByRank();
+
+    List<Admin> getEmployerWithJobs();
 }

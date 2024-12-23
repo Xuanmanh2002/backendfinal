@@ -64,10 +64,6 @@ public class OrderService implements IOrderService{
                 orderDetail.setPrice(servicePack.getPrice());
                 orderDetail.setQuantity(cartItem.getQuantity());
                 orderDetail.setTotalAmounts(cartItem.getTotalPrice());
-                if ("Thanh toán thành công".equals(order.getOrderStatus())){
-                    orderDetail.setActivationDate(LocalDate.now());
-                    orderDetail.setStatus(true);
-                }
                 orderDetail.setTotalValidityPeriod(cartItem.getTotalValidityPeriod());
                 orderDetails.add(orderDetail);
             } else {
@@ -78,32 +74,6 @@ public class OrderService implements IOrderService{
         double totalAmounts = cart.getTotalAmounts() + (cart.getTotalAmounts() * 0.08);
         order.setTotalAmounts(totalAmounts);
         order.setOrderDetails(orderDetails);
-        if ("Thanh toán thành công".equals(order.getOrderStatus())) {
-            if (totalAmounts >= 20000000) {
-                admin.setRank("diamond");
-            } else if (totalAmounts >= 10000000) {
-                admin.setRank("gold");
-            } else if (totalAmounts >= 2000000) {
-                admin.setRank("silver");
-            } else {
-                admin.setRank("default");
-            }
-            employerRepository.save(admin);
-        }
-        if ("Thanh toán thành công".equals(order.getOrderStatus())) {
-            List<Job> jobs = jobRepository.findByAdmins(admin);
-            for (Job job : jobs) {
-                if (Boolean.TRUE.equals(job.getStatus())) {
-                    job.setTotalValidityPeriod(job.getTotalValidityPeriod() + order.getTotalValidityPeriod());
-                } else {
-                    job.setTotalValidityPeriod(order.getTotalValidityPeriod());
-                    job.setActivationDate(LocalDate.now());
-                    job.setStatus(true);
-                }
-                jobRepository.save(job);
-            }
-        }
-
         orderRepository.save(order);
         cartItemRepository.deleteAll(cart.getCartItems());
         cartRepository.delete(cart);
@@ -240,6 +210,40 @@ public class OrderService implements IOrderService{
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order không tồn tại với ID: " + orderId));
         order.setOrderStatus(orderStatus);
+
+        if ("Thanh toán thành công".equals(orderStatus)) {
+            Admin admin = order.getAdmins();
+            if (admin == null) {
+                throw new RuntimeException("Không tìm thấy Admin liên quan đến Order.");
+            }
+            List<Job> jobs = jobRepository.findByAdmins(admin);
+            for (Job job : jobs) {
+                if (Boolean.TRUE.equals(job.getStatus())) {
+                    job.setTotalValidityPeriod(job.getTotalValidityPeriod() + order.getTotalValidityPeriod());
+                } else {
+                    job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+                    job.setActivationDate(LocalDate.now());
+                    job.setStatus(true);
+                }
+                jobRepository.save(job);
+            }
+            for (OrderDetail orderDetail : order.getOrderDetails()) {
+                orderDetail.setActivationDate(LocalDate.now());
+                orderDetail.setStatus(true);
+                orderDetailRepository.save(orderDetail);
+            }
+            double totalAmounts = order.getTotalAmounts();
+            if (totalAmounts >= 20000000) {
+                admin.setRank("diamond");
+            } else if (totalAmounts >= 10000000) {
+                admin.setRank("gold");
+            } else if (totalAmounts >= 2000000) {
+                admin.setRank("silver");
+            } else {
+                admin.setRank("default");
+            }
+            employerRepository.save(admin);
+        }
         orderRepository.save(order);
         return order;
     }
