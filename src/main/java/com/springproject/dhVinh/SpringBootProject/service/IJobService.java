@@ -39,4 +39,10 @@ public interface IJobService {
     List<Job> getAllJobByCategoryIdAddressId(Long categoryId, Long addressId);
 
     List<Job> searchJobsByKeyword(String keyword);
+
+    long countJobByStatusTrue(Long adminId);
+
+    List<Job> findByServiceGood();
+
+    List<Job> findByServiceSexy();
 }

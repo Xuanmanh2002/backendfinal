@@ -9,6 +9,7 @@ import com.springproject.dhVinh.SpringBootProject.response.CustomerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.service.IApplicationDocumentsService;
 import com.springproject.dhVinh.SpringBootProject.service.ICustomerService;
+import com.springproject.dhVinh.SpringBootProject.service.IEmployerService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.security.Principal;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +35,8 @@ public class ApplicationDocumentsController {
     private final IApplicationDocumentsService adService;
 
     private final ICustomerService customerService;
+
+    private final IEmployerService employerService;
 
     @PostMapping(value = "/add")
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
@@ -207,5 +211,29 @@ public class ApplicationDocumentsController {
             );
         }).collect(Collectors.toList());
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/count-applications")
+    public ResponseEntity<Long> countApplicationDocuments(Principal principal) {
+        String email = principal.getName();
+        Admin admin = employerService.getEmployer(email);
+        try {
+            long count = adService.countApplicationDocuments(admin.getId());
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(0L);
+        }
+    }
+
+    @GetMapping("/count-applications-pending")
+    public ResponseEntity<Long> countApplicationDocumentsPending(Principal principal) {
+        String email = principal.getName();
+        Admin admin = employerService.getEmployer(email);
+        try {
+            long count = adService.countApplicationDocumentsPending(admin.getId());
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(0L);
+        }
     }
 }

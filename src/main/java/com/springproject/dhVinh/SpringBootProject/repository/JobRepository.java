@@ -57,4 +57,25 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @Query("SELECT j FROM Job j WHERE LOWER(j.jobName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(j.recruitmentDetails) LIKE LOWER(CONCAT('%', '%', :keyword , '%', '%'))")
     List<Job> searchByKeyword(String keyword);
+
+    @Query("SELECT COUNT(j) FROM Job j " +
+            "JOIN j.admins a " +
+            "WHERE j.status = true AND a.id = :adminId")
+    long countJobStatusTrue(@Param("adminId") Long adminId);
+
+    @Query("SELECT j FROM Job j " +
+            "JOIN FETCH j.admins a " +
+            "JOIN FETCH a.orders o " +
+            "JOIN FETCH o.orderDetails od " +
+            "JOIN FETCH od.services s " +
+            "WHERE j.status = true AND s.displayPosition IN ('Việc làm tốt nhất', 'Việc làm hấp dẫn, Việc làm tốt nhất')")
+    List<Job> findByServiceGood();
+
+    @Query("SELECT j FROM Job j " +
+            "JOIN FETCH j.admins a " +
+            "JOIN FETCH a.orders o " +
+            "JOIN FETCH o.orderDetails od " +
+            "JOIN FETCH od.services s " +
+            "WHERE j.status = true AND s.displayPosition = 'Việc làm hấp dẫn, Việc làm tốt nhất'")
+    List<Job> findByServiceSexy();
 }

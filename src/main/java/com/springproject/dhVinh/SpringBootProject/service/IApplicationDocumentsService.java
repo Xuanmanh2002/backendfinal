@@ -24,4 +24,8 @@ public interface IApplicationDocumentsService {
     ApplicationDocuments updateStatus(Long applicationDocumentsId, String status);
 
     List<ApplicationDocuments> getApplicationDocumentsByStatus(String status,  Long adminId);
+
+    long countApplicationDocuments(Long adminId);
+
+    long countApplicationDocumentsPending(Long adminId);
 }

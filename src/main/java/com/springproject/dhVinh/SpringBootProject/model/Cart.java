@@ -28,6 +28,8 @@ public class Cart {
     private Long totalItems;
     @Column(name = "totalValidityPeriod")
     private Long totalValidityPeriod;
+    @Column(name = "totalBenefit")
+    private Long totalBenefit;
 
     @OneToMany(mappedBy = "carts", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonBackReference

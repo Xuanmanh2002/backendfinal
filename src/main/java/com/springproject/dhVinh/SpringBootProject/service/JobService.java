@@ -47,10 +47,8 @@ public class JobService implements IJobService {
         if (admin == null) {
             throw new IllegalArgumentException("Admin cannot be null.");
         }
-
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category with ID " + categoryId + " not found"));
-
         Job job = new Job();
         job.setAdmins(admin);
         job.setJobName(jobName);
@@ -69,12 +67,21 @@ public class JobService implements IJobService {
             Order order = orderRepository.findByAdminId(admin.getId())
                     .orElseThrow(() -> new RuntimeException("Order not found for admin ID " + admin.getId()));
 
-            boolean allServicesActive = order.getOrderDetails().stream()
-                    .allMatch(OrderDetail::getStatus);
-            if (allServicesActive) {
-                job.setStatus(true);
-                job.setActivationDate(LocalDate.now());
-                job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+            if ("Thanh toán thành công".equals(order.getOrderStatus())) {
+                if (order.getTotalBenefit() > 0) {
+                    order.setTotalBenefit(order.getTotalBenefit() - 1);
+                    OrderDetail orderDetail = new OrderDetail();
+                    orderDetail.setTotalBenefit(orderDetail.getTotalBenefit() -1);
+                    orderRepository.save(order);
+
+                    job.setStatus(true);
+                    job.setActivationDate(LocalDate.now());
+                    job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+                } else {
+                    job.setStatus(false);
+                    job.setActivationDate(null);
+                    job.setTotalValidityPeriod(null);
+                }
             } else {
                 job.setStatus(false);
                 job.setActivationDate(null);
@@ -85,13 +92,13 @@ public class JobService implements IJobService {
             job.setActivationDate(null);
             job.setTotalValidityPeriod(null);
         }
+
         LocalDate today = LocalDate.now();
         if (Boolean.TRUE.equals(job.getStatus()) && applicationDeadline.toLocalDate().isBefore(today)) {
             job.setStatus(false);
         }
         return jobRepository.save(job);
     }
-
 
     @Override
     public List<Job> getAllJobs() {
@@ -188,5 +195,20 @@ public class JobService implements IJobService {
     @Override
     public List<Job> searchJobsByKeyword(String keyword) {
         return jobRepository.searchByKeyword(keyword);
+    }
+
+    @Override
+    public long countJobByStatusTrue(Long adminId) {
+        return jobRepository.countJobStatusTrue(adminId);
+    }
+
+    @Override
+    public List<Job> findByServiceGood() {
+        return jobRepository.findByServiceGood();
+    }
+
+    @Override
+    public List<Job> findByServiceSexy() {
+        return jobRepository.findByServiceSexy();
     }
 }

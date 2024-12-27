@@ -10,6 +10,7 @@ import com.springproject.dhVinh.SpringBootProject.response.AdminResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.JobResponse;
 import com.springproject.dhVinh.SpringBootProject.service.IAdminService;
+import com.springproject.dhVinh.SpringBootProject.service.IEmployerService;
 import com.springproject.dhVinh.SpringBootProject.service.IJobService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class JobController {
 
     private final IJobService jobService;
 
-    private final JobRepository jobRepository;
+    private final IEmployerService employerService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
@@ -448,6 +449,72 @@ public class JobController {
         if (jobs.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+    @GetMapping("/count-job-true")
+    public ResponseEntity<Long> countJobTrue(Principal principal) {
+        String email = principal.getName();
+        Admin admin = employerService.getEmployer(email);
+        try {
+            long count = jobService.countJobByStatusTrue(admin.getId());
+            return ResponseEntity.ok(count);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(0L);
+        }
+    }
+
+    @GetMapping("/job-service-good")
+    public ResponseEntity<List<JobResponse>> getAllJobsGood() {
+        List<Job> jobs = jobService.findByServiceGood();
+        List<JobResponse> jobResponses = jobs.stream().map(job -> {
+            EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
+            return new JobResponse(
+                    job.getId(),
+                    job.getJobName(),
+                    job.getExperience(),
+                    job.getPrice(),
+                    job.getApplicationDeadline(),
+                    job.getRecruitmentDetails(),
+                    job.getTotalValidityPeriod(),
+                    job.getActivationDate(),
+                    employerResponse,
+                    job.getCreateAt(),
+                    job.getStatus(),
+                    job.getRanker(),
+                    job.getQuantity(),
+                    job.getWorkingForm(),
+                    job.getGender(),
+                    job.getCategories().getId()
+            );
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(jobResponses);
+    }
+
+    @GetMapping("/job-service-sexy")
+    public ResponseEntity<List<JobResponse>> getAllJobsSexy() {
+        List<Job> jobs = jobService.findByServiceSexy();
         List<JobResponse> jobResponses = jobs.stream().map(job -> {
             EmployerResponse employerResponse = getEmployerResponse(job.getAdmins());
             return new JobResponse(

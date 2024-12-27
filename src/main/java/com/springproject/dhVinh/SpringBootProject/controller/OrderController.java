@@ -1,16 +1,20 @@
 package com.springproject.dhVinh.SpringBootProject.controller;
+
 import com.springproject.dhVinh.SpringBootProject.exception.PhotoRetrievalException;
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.model.Cart;
 import com.springproject.dhVinh.SpringBootProject.model.Order;
 import com.springproject.dhVinh.SpringBootProject.model.OrderDetail;
+import com.springproject.dhVinh.SpringBootProject.repository.CartRepository;
 import com.springproject.dhVinh.SpringBootProject.response.CartResponse;
 import com.springproject.dhVinh.SpringBootProject.response.EmployerResponse;
 import com.springproject.dhVinh.SpringBootProject.response.OrderDetailResponse;
 import com.springproject.dhVinh.SpringBootProject.response.OrderResponse;
+import com.springproject.dhVinh.SpringBootProject.security.payment.VNPayConfig;
 import com.springproject.dhVinh.SpringBootProject.service.ICartService;
 import com.springproject.dhVinh.SpringBootProject.service.IEmployerService;
 import com.springproject.dhVinh.SpringBootProject.service.IOrderService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,12 +22,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.sql.Blob;
 import java.sql.SQLException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -37,24 +43,102 @@ public class OrderController {
 
     private final ICartService cartService;
 
+    private final CartRepository cartRepository;
+
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_EMPLOYER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> createOrderAndUpdateService(
-            @RequestParam Cart cart,
-            Principal principal) {
+            @RequestParam Long cartId,
+            Principal principal,
+            HttpServletRequest request) {
         try {
             String email = principal.getName();
             Admin admin = employerService.getEmployer(email);
-
             if (admin == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Admin not found for email: " + email);
             }
-            Order order = orderService.createOrderAndUpdateService(admin, cart);
-            return ResponseEntity.ok(order);
+            Cart cart = cartRepository.findById(cartId)
+                    .orElseThrow(() -> new RuntimeException("Cart not found for ID: " + cartId));
+            Order order = orderService.createOrderAndUpdateService(admin, cartId);
+            String bankCode = "NCB";
+            String vnp_IpAddr = VNPayConfig.getIpAddress(request);
+            Double amount = cart.getTotalAmounts();
+            String paymentUrl = createPayment(amount, bankCode, vnp_IpAddr);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("order", order);
+            response.put("paymentUrl", paymentUrl);
+
+            return ResponseEntity.ok(response);
+        } catch (UnsupportedEncodingException ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Encoding error: " + ex.getMessage());
         } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(ex.getMessage());
+            ex.printStackTrace();
+            return ResponseEntity.badRequest().body("Error occurred: " + ex.getMessage());
         }
+    }
+
+    public String createPayment(Double amount, String bankCode, String vnp_IpAddr) throws UnsupportedEncodingException {
+        String vnp_Version = "2.1.0";
+        String vnp_Command = "pay";
+        String orderType = "other";
+
+        String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
+        Long amountInVND = Math.round(amount * 100);
+
+        String vnp_TmnCode = VNPayConfig.vnp_TmnCode;
+        Map<String, String> vnp_Params = new HashMap<>();
+        vnp_Params.put("vnp_Version", vnp_Version);
+        vnp_Params.put("vnp_Command", vnp_Command);
+        vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
+        vnp_Params.put("vnp_Amount", String.valueOf(amountInVND));
+        vnp_Params.put("vnp_CurrCode", "VND");
+        vnp_Params.put("vnp_BankCode", "NCB");
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang:" + vnp_TxnRef);
+        vnp_Params.put("vnp_OrderType", orderType);
+        vnp_Params.put("vnp_Locale", "vn");
+        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
+        vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
+
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        String vnp_CreateDate = formatter.format(cld.getTime());
+        vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
+
+        cld.add(Calendar.MINUTE, 15);
+        String vnp_ExpireDate = formatter.format(cld.getTime());
+        vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
+
+        List fieldNames = new ArrayList(vnp_Params.keySet());
+        Collections.sort(fieldNames);
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder query = new StringBuilder();
+        Iterator itr = fieldNames.iterator();
+        while (itr.hasNext()) {
+            String fieldName = (String) itr.next();
+            String fieldValue = (String) vnp_Params.get(fieldName);
+            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                hashData.append(fieldName);
+                hashData.append('=');
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
+                query.append('=');
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                if (itr.hasNext()) {
+                    query.append('&');
+                    hashData.append('&');
+                }
+            }
+        }
+        String queryUrl = query.toString();
+        String vnp_SecureHash = VNPayConfig.hmacSHA512(VNPayConfig.secretKey, hashData.toString());
+        queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
+        String paymentUrl = VNPayConfig.vnp_PayUrl + "?" + queryUrl;
+        return paymentUrl;
     }
 
     @PutMapping("/update")
@@ -93,12 +177,12 @@ public class OrderController {
         List<OrderResponse> orderResponses = orders.stream().map(order -> {
             EmployerResponse employerResponse = getEmployerResponse(order.getAdmins());
             return new OrderResponse(
-                order.getId(),
-                order.getOrderDate(),
-                order.getOrderStatus(),
-                order.getTotalAmounts(),
-                order.getTotalValidityPeriod(),
-                employerResponse
+                    order.getId(),
+                    order.getOrderDate(),
+                    order.getOrderStatus(),
+                    order.getTotalAmounts(),
+                    order.getTotalValidityPeriod(),
+                    employerResponse
             );
         }).collect(Collectors.toList());
         return ResponseEntity.ok(orderResponses);
@@ -142,6 +226,7 @@ public class OrderController {
                         orderDetail.getPrice(),
                         orderDetail.getTotalAmounts(),
                         orderDetail.getTotalValidityPeriod(),
+                        orderDetail.getTotalBenefit(),
                         orderDetail.getActivationDate(),
                         orderDetail.getStatus(),
                         orderDetail.getServices().getId(),
@@ -165,23 +250,24 @@ public class OrderController {
     @GetMapping("/order-details")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
     public ResponseEntity<?> getOrderDetailsByAdmin(Principal principal) {
-            String email = principal.getName();
-            Admin admin = employerService.getEmployer(email);
-            List<OrderDetail> orderDetails = orderService.getAllOrderDetailByAdmin(admin.getId());
-            List<OrderDetailResponse> response = orderDetails.stream()
-                    .map(orderDetail -> new OrderDetailResponse(
-                            orderDetail.getId(),
-                            orderDetail.getQuantity(),
-                            orderDetail.getPrice(),
-                            orderDetail.getTotalAmounts(),
-                            orderDetail.getTotalValidityPeriod(),
-                            orderDetail.getActivationDate(),
-                            orderDetail.getStatus(),
-                            orderDetail.getServices().getId(),
-                            orderDetail.getOrders().getId()
-                    ))
-                    .toList();
-            return ResponseEntity.ok(response);
+        String email = principal.getName();
+        Admin admin = employerService.getEmployer(email);
+        List<OrderDetail> orderDetails = orderService.getAllOrderDetailByAdmin(admin.getId());
+        List<OrderDetailResponse> response = orderDetails.stream()
+                .map(orderDetail -> new OrderDetailResponse(
+                        orderDetail.getId(),
+                        orderDetail.getQuantity(),
+                        orderDetail.getPrice(),
+                        orderDetail.getTotalAmounts(),
+                        orderDetail.getTotalValidityPeriod(),
+                        orderDetail.getTotalBenefit(),
+                        orderDetail.getActivationDate(),
+                        orderDetail.getStatus(),
+                        orderDetail.getServices().getId(),
+                        orderDetail.getOrders().getId()
+                ))
+                .toList();
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/order-by-employer")
@@ -206,7 +292,7 @@ public class OrderController {
                 .stream()
                 .mapToLong(detail -> detail.getServices().getValidityPeriod())
                 .sum();
-        OrderResponse orderResponse= new OrderResponse(
+        OrderResponse orderResponse = new OrderResponse(
                 order.getId(),
                 order.getOrderDate(),
                 order.getOrderStatus(),
@@ -219,11 +305,11 @@ public class OrderController {
 
     @DeleteMapping("/delete-order-details")
     @PreAuthorize("hasRole('ROLE_EMPLOYER')")
-    public ResponseEntity<?> deleteOrderDetail(@RequestParam  Long serviceId, Principal principal) {
-            String email = principal.getName();
-            Admin admin = employerService.getEmployer(email);
-            orderService.deleteOrderDetailToOrder(serviceId, admin);
-            return ResponseEntity.ok("Chi tiết đơn hàng đã được xóa thành công.");
+    public ResponseEntity<?> deleteOrderDetail(@RequestParam Long serviceId, Principal principal) {
+        String email = principal.getName();
+        Admin admin = employerService.getEmployer(email);
+        orderService.deleteOrderDetailToOrder(serviceId, admin);
+        return ResponseEntity.ok("Chi tiết đơn hàng đã được xóa thành công.");
     }
 
     @PutMapping("/update-status/{orderId}")
@@ -241,5 +327,40 @@ public class OrderController {
         return orderService.calculateTotalAmountsByMonth();
     }
 
+    @GetMapping("/total-amounts-by-quarter/{year}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Map<Integer, Double>> getTotalAmountsByQuarter(@PathVariable int year) {
+        Map<Integer, Double> quarterAmounts = orderService.calculateTotalAmountsByQuarter(year);
+        return ResponseEntity.ok(quarterAmounts);
+    }
 
+    @GetMapping("/total-amounts-by-year")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Map<Integer, Double>> getTotalAmountsByYear() {
+        Map<Integer, Double> yearAmounts = orderService.calculateTotalAmountsByYear();
+        return ResponseEntity.ok(yearAmounts);
+    }
+
+    @GetMapping("/top-spending-employer")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<EmployerResponse> getTopSpendingEmployer() {
+        Admin topEmployer = orderService.getTopSpendingEmployer();
+        if (topEmployer == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        EmployerResponse employerResponse = getEmployerResponse(topEmployer);
+        return ResponseEntity.ok(employerResponse);
+    }
+
+    @GetMapping("/total-amounts-by-employer")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Map<EmployerResponse, Double>> getTotalAmountsByEmployer() {
+        Map<Admin, Double> employerAmounts = orderService.calculateTotalAmountsByEmployer();
+        Map<EmployerResponse, Double> response = employerAmounts.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> getEmployerResponse(entry.getKey()),
+                        Map.Entry::getValue
+                ));
+        return ResponseEntity.ok(response);
+    }
 }

@@ -29,6 +29,8 @@ public class Order {
     private Double totalAmounts;
     @Column(name = "totalValidityPeriod")
     private Long totalValidityPeriod;
+    @Column(name = "totalBenefit")
+    private Long totalBenefit;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference

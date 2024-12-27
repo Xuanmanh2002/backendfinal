@@ -66,6 +66,10 @@ public class Admin {
     @JsonManagedReference
     private List<ApplicationDocuments> applicationDocuments;
 
+    @OneToMany(mappedBy = "admins", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private Set<Order> orders = new HashSet<>();
+
     @OneToMany(mappedBy = "admins" , fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Cart> carts;

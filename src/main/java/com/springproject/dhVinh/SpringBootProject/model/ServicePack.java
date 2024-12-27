@@ -27,6 +27,10 @@ public class ServicePack {
     private Double price;
     @Column(name = "validityPeriod")
     private Long validityPeriod;
+    @Column(name = "benefit")
+    private Long benefit;
+    @Column(name = "displayPosition")
+    private String displayPosition;
     @Column(name = "description")
     private String description;
     @Column(name = "createAt")

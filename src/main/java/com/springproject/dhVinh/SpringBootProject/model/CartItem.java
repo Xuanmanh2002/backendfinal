@@ -24,6 +24,8 @@ public class CartItem {
     private Long quantity;
     @Column(name = "totalValidityPeriod")
     private Long totalValidityPeriod;
+    @Column(name = "totalBenefit")
+    private Long totalBenefit;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference

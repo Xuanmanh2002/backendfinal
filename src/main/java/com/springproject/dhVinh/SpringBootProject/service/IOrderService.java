@@ -12,7 +12,7 @@ public interface IOrderService {
 
     List<Order> getAllOrder();
 
-    Order createOrderAndUpdateService(Admin admin, Cart cart);
+    Order createOrderAndUpdateService(Admin admin, Long cartId);
 
     Order updateOrder(Admin admin, Cart cart);
 
@@ -33,4 +33,12 @@ public interface IOrderService {
     Order updateOrderStatus(Long orderId,String orderStatus);
 
     Map<Integer, Double> calculateTotalAmountsByMonth();
+
+    Map<Integer, Double> calculateTotalAmountsByQuarter(int year);
+
+    Map<Integer, Double> calculateTotalAmountsByYear();
+
+    Admin getTopSpendingEmployer();
+
+    Map<Admin, Double> calculateTotalAmountsByEmployer();
 }

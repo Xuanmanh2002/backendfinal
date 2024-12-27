@@ -36,10 +36,12 @@ public class OrderService implements IOrderService{
     }
 
     @Override
-    public Order createOrderAndUpdateService(Admin admin, Cart cart) {
+    public Order createOrderAndUpdateService(Admin admin, Long cartId) {
         if (admin == null) {
             throw new RuntimeException("Admin not found");
         }
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new RuntimeException("Cart not found"));
         Order order = orderRepository.findByAdmin(admin);
         if (order == null) {
             order = new Order();
@@ -49,6 +51,7 @@ public class OrderService implements IOrderService{
             order.setTotalValidityPeriod(cart.getTotalValidityPeriod());
             order.setOrderStatus("Chờ thanh toán");
             order.setOrderDetails(new ArrayList<>());
+            order.setTotalBenefit(cart.getTotalBenefit());
         }
         List<OrderDetail> orderDetails = order.getOrderDetails() != null ? order.getOrderDetails() : new ArrayList<>();
         for (CartItem cartItem : cart.getCartItems()) {
@@ -65,6 +68,7 @@ public class OrderService implements IOrderService{
                 orderDetail.setQuantity(cartItem.getQuantity());
                 orderDetail.setTotalAmounts(cartItem.getTotalPrice());
                 orderDetail.setTotalValidityPeriod(cartItem.getTotalValidityPeriod());
+                orderDetail.setTotalBenefit(cartItem.getTotalBenefit());
                 orderDetails.add(orderDetail);
             } else {
                 orderDetail.setQuantity(orderDetail.getQuantity() + cartItem.getQuantity());
@@ -129,13 +133,6 @@ public class OrderService implements IOrderService{
         orderRepository.save(order);
         cartItemRepository.deleteAll(cart.getCartItems());
         cartRepository.delete(cart);
-
-        Notification notification = new Notification();
-        notification.setTitle(admin.getFirstName() + " đã mua hàng");
-        notification.setStatus(false);
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setAdmins(admin);
-        notificationRepository.save(notification);
         return order;
     }
 
@@ -210,28 +207,36 @@ public class OrderService implements IOrderService{
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order không tồn tại với ID: " + orderId));
         order.setOrderStatus(orderStatus);
-
         if ("Thanh toán thành công".equals(orderStatus)) {
             Admin admin = order.getAdmins();
             if (admin == null) {
                 throw new RuntimeException("Không tìm thấy Admin liên quan đến Order.");
             }
             List<Job> jobs = jobRepository.findByAdmins(admin);
+            long activatedJobsCount = jobs.stream()
+                    .filter(Job::getStatus)
+                    .count();
+            long jobsToActivate = order.getTotalBenefit() - activatedJobsCount;
             for (Job job : jobs) {
-                if (Boolean.TRUE.equals(job.getStatus())) {
-                    job.setTotalValidityPeriod(job.getTotalValidityPeriod() + order.getTotalValidityPeriod());
-                } else {
-                    job.setTotalValidityPeriod(order.getTotalValidityPeriod());
-                    job.setActivationDate(LocalDate.now());
+                if (!job.getStatus() && jobsToActivate > 0) {
                     job.setStatus(true);
+                    job.setActivationDate(LocalDate.now());
+                    job.setTotalValidityPeriod(order.getTotalValidityPeriod());
+                    jobRepository.save(job);
+                    jobsToActivate--;
                 }
-                jobRepository.save(job);
             }
             for (OrderDetail orderDetail : order.getOrderDetails()) {
                 orderDetail.setActivationDate(LocalDate.now());
                 orderDetail.setStatus(true);
                 orderDetailRepository.save(orderDetail);
             }
+            Notification notification = new Notification();
+            notification.setTitle(admin.getFirstName() + " " + admin.getLastName() + " đã mua hàng thành công");
+            notification.setStatus(false);
+            notification.setCreatedAt(LocalDateTime.now());
+            notification.setAdmins(admin);
+            notificationRepository.save(notification);
             double totalAmounts = order.getTotalAmounts();
             if (totalAmounts >= 20000000) {
                 admin.setRank("diamond");
@@ -244,6 +249,7 @@ public class OrderService implements IOrderService{
             }
             employerRepository.save(admin);
         }
+
         orderRepository.save(order);
         return order;
     }
@@ -261,6 +267,68 @@ public class OrderService implements IOrderService{
             totalAmountsByMonth.put(month, totalAmountsByMonth.get(month) + totalAmount);
         }
         return totalAmountsByMonth;
+    }
+
+    @Override
+    public Map<Integer, Double> calculateTotalAmountsByQuarter(int year) {
+        List<Order> orders = orderRepository.findAll();
+        Map<Integer, Double> quarterAmounts = new HashMap<>();
+
+        for (Order order : orders) {
+            if (order.getOrderDate().getYear() + 1900 == year) {
+                int month = order.getOrderDate().getMonthValue();
+                int quarter = (month - 1) / 3 + 1;
+                double amount = order.getTotalAmounts();
+
+                quarterAmounts.put(quarter, quarterAmounts.getOrDefault(quarter, 0.0) + amount);
+            }
+        }
+
+        return quarterAmounts;
+    }
+
+    @Override
+    public Map<Integer, Double> calculateTotalAmountsByYear() {
+        List<Order> orders = orderRepository.findAll();
+        Map<Integer, Double> yearAmounts = new HashMap<>();
+        for (Order order : orders) {
+            int year = order.getOrderDate().getYear() + 1900;
+            double amount = order.getTotalAmounts();
+
+            yearAmounts.put(year, yearAmounts.getOrDefault(year, 0.0) + amount);
+        }
+        return yearAmounts;
+    }
+
+    @Override
+    public Admin getTopSpendingEmployer() {
+        List<Order> orders = orderRepository.findAll();
+        Map<Admin, Double> employerSpending = new HashMap<>();
+
+        for (Order order : orders) {
+            Admin employer = order.getAdmins();
+            double amount = order.getTotalAmounts();
+
+            employerSpending.put(employer, employerSpending.getOrDefault(employer, 0.0) + amount);
+        }
+        return employerSpending.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+    }
+
+    @Override
+    public Map<Admin, Double> calculateTotalAmountsByEmployer() {
+        List<Order> orders = orderRepository.findAll();
+        Map<Admin, Double> employerAmounts = new HashMap<>();
+
+        for (Order order : orders) {
+            Admin employer = order.getAdmins();
+            double amount = order.getTotalAmounts();
+
+            employerAmounts.put(employer, employerAmounts.getOrDefault(employer, 0.0) + amount);
+        }
+        return employerAmounts;
     }
 
 

@@ -31,7 +31,6 @@ public class CartService implements ICartService{
         if (admin == null) {
             throw new RuntimeException("Admin not found");
         }
-
         Cart cart = cartRepository.findByAdmin(admin);
         if (cart == null) {
             cart = new Cart();
@@ -41,7 +40,6 @@ public class CartService implements ICartService{
             cart.setTotalValidityPeriod(0L);
             this.cartRepository.save(cart);
         }
-
         Optional<ServicePack> optionalServicePack = servicePackRepository.findById(serviceId);
         if (!optionalServicePack.isPresent()) {
             throw new RuntimeException("Service not found");
@@ -61,6 +59,7 @@ public class CartService implements ICartService{
                     newCartItem.setQuantity(0L);
                     newCartItem.setTotalPrice(0.0);
                     newCartItem.setTotalValidityPeriod(0L);
+                    newCartItem.setTotalBenefit(0L);
                     cartItemRepository.save(newCartItem);
                     finalCart.getCartItems().add(newCartItem);
                     return newCartItem;
@@ -70,14 +69,16 @@ public class CartService implements ICartService{
         cartItem.setQuantity(newQuantity);
         cartItem.setTotalPrice(newQuantity * servicePack.getPrice());
         cartItem.setTotalValidityPeriod(servicePack.getValidityPeriod() * newQuantity);
+        cartItem.setTotalBenefit(servicePack.getBenefit() * newQuantity);
         cartItemRepository.save(cartItem);
         long totalQuantity = cartItemRepository.sumQuantityByCart(cart.getId());
         double totalPrice = cartItemRepository.sumTotalPriceByCart(cart.getId());
         long totalValidityPeriod = cartItemRepository.sumValidityPeriodByCart(cart.getId());
+        long totalBenefit = cartItemRepository.sumBenefitByCart(cart.getId());
         cart.setTotalItems(totalQuantity);
         cart.setTotalAmounts(totalPrice);
         cart.setTotalValidityPeriod(totalValidityPeriod);
-
+        cart.setTotalBenefit(totalBenefit);
         return cartRepository.save(cart);
     }
 
@@ -106,13 +107,16 @@ public class CartService implements ICartService{
         cartItem.setQuantity(quantity);
         cartItem.setTotalPrice(servicePack.getPrice() * quantity);
         cartItem.setTotalValidityPeriod(servicePack.getValidityPeriod() * quantity);
+        cartItem.setTotalBenefit(servicePack.getBenefit() * quantity);
         cartItemRepository.save(cartItem);
         long totalQuantity = cartItemRepository.sumQuantityByCart(cart.getId());
         double totalPrice = cartItemRepository.sumTotalPriceByCart(cart.getId());
         long totalValidityPeriod = cartItemRepository.sumValidityPeriodByCart(cart.getId());
+        long totalBenefit = cartItemRepository.sumBenefitByCart(cart.getId());
         cart.setTotalValidityPeriod(totalValidityPeriod);
         cart.setTotalItems(totalQuantity);
         cart.setTotalAmounts(totalPrice);
+        cart.setTotalBenefit(totalBenefit);
         return cartRepository.save(cart);
     }
 

@@ -104,7 +104,7 @@ public class ReportController {
         return customerResponse;
     }
 
-    @DeleteMapping("/cancel-report/{reportId}")
+    @DeleteMapping("/delete-report/{reportId}")
     @PreAuthorize("hasRole('ROLE_CUSTOMER')")
     public ResponseEntity<String> cancelReport(@PathVariable Long reportId) {
         reportService.cancleReport(reportId);

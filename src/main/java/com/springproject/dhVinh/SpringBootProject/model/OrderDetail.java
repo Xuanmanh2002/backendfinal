@@ -26,6 +26,8 @@ public class OrderDetail {
     private Double totalAmounts;
     @Column(name = "totalValidityPeriod")
     private Long totalValidityPeriod;
+    @Column(name = "totalBenefit")
+    private Long totalBenefit;
     @Column(name = "activationDate")
     private LocalDate activationDate;
     @Column(name = "status")

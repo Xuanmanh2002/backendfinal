@@ -24,6 +24,9 @@ public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     @Query("SELECT COALESCE(SUM(ci.totalValidityPeriod), 0) FROM CartItem ci WHERE ci.carts.id = :cartId")
     long sumValidityPeriodByCart(@Param("cartId") Long cartId);
 
+    @Query("SELECT COALESCE(SUM(ci.totalBenefit), 0) FROM CartItem ci WHERE ci.carts.id = :cartId")
+    long sumBenefitByCart(@Param("cartId") Long cartId);
+
     @Query("SELECT ci FROM CartItem ci WHERE ci.services.id = :serviceId")
     CartItem findByService(@Param("serviceId") Long serviceId);
 

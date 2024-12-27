@@ -28,4 +28,18 @@ public interface ApplicationDocumentsRepository extends JpaRepository<Applicatio
             "JOIN j.admins a " +
             "WHERE ad.status = :status AND a.id = :adminId")
     List<ApplicationDocuments> findByStatusAndAdminId(@Param("status") String status, @Param("adminId") Long adminId);
+
+    @Query("SELECT COUNT(ad) " +
+            "FROM ApplicationDocuments ad " +
+            "JOIN ad.jobs j " +
+            "JOIN j.admins a " +
+            "WHERE a.id = :adminId AND ad.status = 'Received'")
+    long countReceivedApplicationDocuments(@Param("adminId") Long adminId);
+
+    @Query("SELECT COUNT(ad) " +
+            "FROM ApplicationDocuments ad " +
+            "JOIN ad.jobs j " +
+            "JOIN j.admins a " +
+            "WHERE a.id = :adminId AND ad.status = 'Pending'")
+    long countPendingApplicationDocuments(@Param("adminId") Long adminId);
 }

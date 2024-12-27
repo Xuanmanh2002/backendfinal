@@ -31,25 +31,28 @@ public class ServicePackController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Map<String, Object>> createServicePack(@RequestBody ServicePackResponse response) {
+    public ResponseEntity<Map<String, Object>> createServicePack(@RequestBody ServicePackResponse servicePackRequest) {
         Map<String, Object> responseBody = new HashMap<>();
         try {
-            ServicePack servicePack = new ServicePack();
-            service.createServicePack(response.getServiceName(), response.getPrice(), response.getValidityPeriod(), response.getDescription());
+            service.createServicePack(
+                    servicePackRequest.getServiceName(),
+                    servicePackRequest.getPrice(),
+                    servicePackRequest.getValidityPeriod(),
+                    servicePackRequest.getBenefit(),
+                    servicePackRequest.getDisplayPosition(),
+                    servicePackRequest.getDescription()
+            );
 
             responseBody.put("message", "New service created successfully");
-            responseBody.put("status", HttpStatus.OK.value());
-
+            responseBody.put("status", HttpStatus.OK.getReasonPhrase());
             return ResponseEntity.ok(responseBody);
-        } catch (ServicePackAlreadyExistsException sv) {
-            responseBody.put("error", sv.getMessage());
-            responseBody.put("status", HttpStatus.CONFLICT.value());
-
+        } catch (ServicePackAlreadyExistsException ex) {
+            responseBody.put("error", ex.getMessage());
+            responseBody.put("status", HttpStatus.CONFLICT.getReasonPhrase());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(responseBody);
-        } catch (Exception e) {
-            responseBody.put("error", "An error occurred while creating the Service.");
-            responseBody.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-
+        } catch (Exception ex) {
+            responseBody.put("error", "An error occurred while creating the service.");
+            responseBody.put("status", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(responseBody);
         }
     }
@@ -68,7 +71,7 @@ public class ServicePackController {
             Map<String, Object> result = new HashMap<>();
             try{
             ServicePack servicePack = service.updateServicePack(servicePackId, response.getServiceName(),
-                    response.getPrice(),response.getValidityPeriod(),response.getDescription());
+                    response.getPrice(),response.getValidityPeriod(),response.getBenefit(), response.getDisplayPosition(), response.getDescription());
             result.put("status", "success");
             result.put("message", "Service update successfully");
             result.put("service", servicePack);

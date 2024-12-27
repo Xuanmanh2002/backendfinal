@@ -22,7 +22,7 @@ public class ServicePackService implements IServicePackService {
     }
 
     @Override
-    public ServicePack createServicePack(String serviceName, Double price,  Long validityPeriod, String description) {
+    public ServicePack createServicePack(String serviceName, Double price,  Long validityPeriod, Long benefit, String displayPosition, String description) {
         if(servicePackRepository.existsByServiceName(serviceName)) {
             throw new ServicePackAlreadyExistsException(serviceName + "serviceName already exists");
         }
@@ -31,6 +31,8 @@ public class ServicePackService implements IServicePackService {
         servicePack.setPrice(price);
         servicePack.setDescription(description);
         servicePack.setValidityPeriod(validityPeriod);
+        servicePack.setBenefit(benefit);
+        servicePack.setDisplayPosition(displayPosition);
         LocalDate createDate = LocalDate.now();
         servicePack.setCreateAt(createDate);
         return servicePackRepository.save(servicePack);
@@ -47,13 +49,15 @@ public class ServicePackService implements IServicePackService {
     }
 
     @Override
-    public ServicePack updateServicePack(Long servicePackId, String serviceName, Double price,  Long validityPeriod, String description) {
+    public ServicePack updateServicePack(Long servicePackId, String serviceName, Double price,  Long validityPeriod, Long benefit, String displayPosition, String description) {
         Optional<ServicePack> optionalServicePack = servicePackRepository.findById(servicePackId);
         if(optionalServicePack.isPresent()) {
             ServicePack servicePack = optionalServicePack.get();
             servicePack.setServiceName(serviceName);
             servicePack.setPrice(price);
             servicePack.setValidityPeriod(validityPeriod);
+            servicePack.setBenefit(benefit);
+            servicePack.setDisplayPosition(displayPosition);
             servicePack.setDescription(description);
             return servicePackRepository.save(servicePack);
         } else {

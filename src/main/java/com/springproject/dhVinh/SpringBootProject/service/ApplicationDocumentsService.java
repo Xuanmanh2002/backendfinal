@@ -5,6 +5,7 @@ import com.springproject.dhVinh.SpringBootProject.exception.JobAlreadyExistExcep
 import com.springproject.dhVinh.SpringBootProject.model.Admin;
 import com.springproject.dhVinh.SpringBootProject.model.ApplicationDocuments;
 import com.springproject.dhVinh.SpringBootProject.model.Job;
+import com.springproject.dhVinh.SpringBootProject.model.Notification;
 import com.springproject.dhVinh.SpringBootProject.repository.ApplicationDocumentsRepository;
 import com.springproject.dhVinh.SpringBootProject.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,7 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
         applicationDocuments.setEmail(email);
         applicationDocuments.setTelephone(telephone);
         applicationDocuments.setLetter(letter);
-        applicationDocuments.setStatus("Received");
+        applicationDocuments.setStatus("Pending");
         applicationDocuments.setJobs(job);
         LocalDate createdDate = LocalDate.now();
         applicationDocuments.setCreateAt(createdDate);
@@ -102,14 +103,15 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
             applicationDocumentsRepository.save(applicationDocuments);
             String jobName = applicationDocuments.getJobs().getJobName();
             String companyName = applicationDocuments.getJobs().getAdmins().getCompanyName();
-            if ("Accept".equalsIgnoreCase(status) || "Reject".equalsIgnoreCase(status)) {
+            if ("Received".equalsIgnoreCase(status) || "Reject".equalsIgnoreCase(status)) {
                 try {
                     sendEmail(applicationDocuments.getEmail(), status, jobName, companyName);
                 } catch (Exception e) {
                     System.err.println("Không thể gửi email: " + e.getMessage());
                 }
             }
-
+//            Notification notification = new Notification();
+//            notification.setTitle();
             return applicationDocuments;
         } else {
             throw new ApplicationAlreadyExistsException("Application Documents với ID " + applicationDocumentsId + " không tồn tại");
@@ -119,6 +121,16 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
     @Override
     public List<ApplicationDocuments> getApplicationDocumentsByStatus(String status,  Long adminId) {
         return applicationDocumentsRepository.findByStatusAndAdminId(status, adminId);
+    }
+
+    @Override
+    public long countApplicationDocuments(Long adminId) {
+        return applicationDocumentsRepository.countReceivedApplicationDocuments(adminId);
+    }
+
+    @Override
+    public long countApplicationDocumentsPending(Long adminId) {
+        return applicationDocumentsRepository.countPendingApplicationDocuments(adminId);
     }
 
     private void sendEmail(String toEmail, String status, String jobName, String companyName) {
@@ -134,7 +146,7 @@ public class ApplicationDocumentsService implements IApplicationDocumentsService
         message.setSubject("Thông báo về hồ sơ xin việc");
 
         String messageText;
-        if ("Accept".equalsIgnoreCase(status)) {
+        if ("Received".equalsIgnoreCase(status)) {
             messageText = "Hồ sơ xin việc của bạn đã được chấp nhận, hẹn bạn sau 7 ngày nữa đến phỏng vấn vị trí "
                     + jobName + ".\n\nTrân trọng,\n" + companyName + ".";
         } else if ("Reject".equalsIgnoreCase(status)) {
